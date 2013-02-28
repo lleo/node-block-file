@@ -3,6 +3,7 @@
 var Handle = require('../lib/handle')
   , BlockFile = require('../lib/block_file')
   , utils = require('../lib/utils')
+  , fs = require('fs')
   , u = require('lodash')
   , assert = require('assert')
   , expect = require('chai').expect
@@ -23,8 +24,6 @@ catch (x) {
 }
 
 if (stat) {
-  BlockFile.printf("\nHERE\n")
-  BlockFile.printf("\nHERE\n")
   fs.unlinkSync(filename)
 }
 
