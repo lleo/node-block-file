@@ -3,10 +3,12 @@
 var Handle = require('../lib/handle')
   , NaiveFSM = require('../lib/fsm_naive')
   , Segment = require('../lib/segment')
-  , signCRC = require('../lib/utils').signCRC
+  , utils = require('../lib/utils')
+  , signCRC = utils.signCRC
+//  , validateCRC = utils.validateCRC
   , BLOCK_SIZE = require('../lib/constants').BLOCK_SIZE
   , u = require('lodash')
-  , assert = require('chai').assert
+  , assert = require('assert')
   , expect = require('chai').expect
   , log = console.log
   , format = require('util').format
@@ -15,17 +17,57 @@ var Handle = require('../lib/handle')
   , eprintf = require('../lib/utils').eprintf
 
 describe("Segment", function(){
-  var seg
+  var seg, oseg, segNum, hdl
     , buf = new Buffer(BLOCK_SIZE)
 
   buf.fill(0xff)
   signCRC(buf)
 
+  segNum = 0
+  seg = new Segment(segNum, buf, NaiveFSM)
+  oseg = new Segment(segNum, buf, NaiveFSM)
+
   describe("Constructor", function(){
     it("should instantiate a new object", function(){
-      seg = new Segment(buf, NaiveFSM)
+      expect(seg).to.be.instanceof(Segment)
     })
   })
 
+  describe("seg.reserve(numBlks)", function(){
+    it("numBlks=undefined should throw", function(){
+      expect(function(){seg.reserve()}).to.Throw("numBlks not an Integer")
+    })
+    it("numBlks=0 should throw", function(){
+      expect(function(){seg.reserve(0)}).to.Throw("numBlks 0 < 1")
+    })
+    it("numBlks=17 should throw", function(){
+      expect(function(){seg.reserve(17)}).to.Throw("numBlks 17 > MAX_SPANNUM+1 16")
+    })
+  })
 
+  describe("hdl = seg.reserve(1)", function(){
+    it("hdl = seg.reserve(1) to return defined", function(){
+      hdl = seg.reserve(1)
+    })
+
+    it("hdl.segNum == seg.segNum", function(){
+      expect(hdl.segNum).to.equal(seg.segNum)
+    })
+    it("hdl.blkNum == 0", function(){
+      expect(hdl.blkNum).to.equal(0)
+    })
+    it("hdl.spanNum == 0", function(){
+      expect(hdl.spanNum).to.equal(0)
+    })
+  })
+
+  describe("seg.release(hdl)", function(){
+    it("should not blow up", function(){
+      expect(function(){seg.release(hdl)}).to.not.Throw(Error)
+    })
+    it("seg should equal the original Segment object", function(){
+      //expect(seg).to.deep.equal(oseg)
+      expect(seg.equal(oseg)).to.be.true
+    })
+  })
 })
