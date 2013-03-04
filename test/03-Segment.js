@@ -33,17 +33,17 @@ describe("Segment", function(){
     })
   })
 
-  describe("seg.reserve(numBlks)", function(){
-    it("numBlks=undefined should throw", function(){
-      expect(function(){seg.reserve()}).to.Throw("numBlks not an Integer")
-    })
-    it("numBlks=0 should throw", function(){
-      expect(function(){seg.reserve(0)}).to.Throw("numBlks 0 < 1")
-    })
-    it("numBlks=17 should throw", function(){
-      expect(function(){seg.reserve(17)}).to.Throw("numBlks 17 > MAX_SPANNUM+1 16")
-    })
-  })
+  //A!describe("seg.reserve(numBlks)", function(){
+  //A!  it("numBlks=undefined should throw", function(){
+  //A!    expect(function(){seg.reserve()}).to.Throw("numBlks not an Integer")
+  //A!  })
+  //A!  it("numBlks=0 should throw", function(){
+  //A!    expect(function(){seg.reserve(0)}).to.Throw("numBlks 0 < 1")
+  //A!  })
+  //A!  it("numBlks=17 should throw", function(){
+  //A!    expect(function(){seg.reserve(17)}).to.Throw("numBlks 17 > MAX_SPANNUM+1 16")
+  //A!  })
+  //A!})
 
   describe("hdl = seg.reserve(1)", function(){
     it("hdl = seg.reserve(1) to return defined", function(){
