@@ -13,11 +13,11 @@
                   , "url": "http://lleo-blog.blogspot.com/" }
 , "main"        : "lib/index.js"
 , "scripts"     : { "test" : "mocha -R spec -s 1" }
-, "dependencies": { "crc"   : ">=0.2.0"
-		  , "async" : ">=0.1.0"
-		  , "lodash": "*"
-		  , "printf": ">=0.0.7"
-		  , "chai"  : "*" }
-, "devDependencies": { "buffer-equal" : "*" }
+, "dependencies": { "crc"     : ">=0.2.0"
+		  , "async"   : ">=0.1.0"
+		  , "lodash"  : ">=1.0.0"
+		  , "winston" : ">=0.6.0" }
+, "devDependencies": { "buffer-equal" : "*"
+		     , "chai" : "*" }
 , "engines"     : { "node" : ">=0.4.0" }
 }
