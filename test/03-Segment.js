@@ -4,9 +4,9 @@ var Handle = require('../lib/handle')
   , NaiveFSM = require('../lib/fsm_naive')
   , Segment = require('../lib/segment')
   , utils = require('../lib/utils')
-  , signCRC = utils.signCRC
-//  , validateCRC = utils.validateCRC
-  , BLOCK_SIZE = require('../lib/constants').BLOCK_SIZE
+  , signCRC16 = utils.signCRC16
+//  , validateCRC16 = utils.validateCRC16
+  , BLOCK_SIZE = Handle.BLOCK_SIZE
   , u = require('lodash')
   , assert = require('assert')
   , expect = require('chai').expect
@@ -21,7 +21,7 @@ describe("Segment", function(){
     , buf = new Buffer(BLOCK_SIZE)
 
   buf.fill(0xff)
-  signCRC(buf)
+  signCRC16(buf)
 
   segNum = 0
   seg = new Segment(segNum, buf, NaiveFSM)

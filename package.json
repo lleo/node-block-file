@@ -2,7 +2,7 @@
   "name"        : "block-file"
 , "version"     : "0.1.0"
 , "description" : "A library to read/write blocks from a file"
-, "keywords"    : ["tree", "b+tree", "index"]
+, "keywords"    : ["block", "buffer", "storage"]
 , "homepage"    : "https://github/com/lleo/node-bptree"
 , "repository"  : { "type": "git"
                   , "url": "https://github.com/lleo/node-block-file" }
@@ -14,10 +14,11 @@
 , "main"        : "lib/block_file.js"
 , "scripts"     : { "test" : "mocha -R spec -s 1" }
 , "dependencies": { "crc"     : ">=0.2.0"
-		  , "async"   : ">=0.1.0"
-		  , "lodash"  : ">=1.0.0"
+		  , "async"   : ">=0.2.6"
+		  , "lodash"  : ">=1.0.1"
 		  , "winston" : ">=0.6.0" }
 , "devDependencies": { "buffer-equal" : "*"
-		     , "chai" : "*" }
+		     , "mocha" : "*"
+		     , "chai"  : "*" }
 , "engines"     : { "node" : ">=0.4.0" }
 }

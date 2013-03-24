@@ -27,7 +27,14 @@ var filename ='test.bf'
   , sz
   , NUM_BLOCKNUM = Handle.NUM_BLOCKNUM
 
-stat = fs.statSync(filename)
+try {
+  stat = fs.statSync(filename)
+} catch (x) {
+//  if (x.code == "ENOEXIST")
+//    log.info("file "+filename+"does not exist")
+//  else
+    log.info(x)
+}
 
 if (stat) {
   fs.unlinkSync(filename)
@@ -58,6 +65,7 @@ describe("BlockFile", function(){
       BlockFile.create(filename, function(err, bf_){
         bf = bf_
         if (err) {
+          log.info("create: "+err)
           done(err)
           return
         }
@@ -102,7 +110,7 @@ describe("BlockFile", function(){
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      bf.write(lorem4kBuf, function(err, hdl) {
+      bf.store(lorem4kBuf, function(err, hdl) {
         if (err) {
           done(err)
           return
@@ -143,7 +151,7 @@ describe("BlockFile", function(){
     it("Read the previous 4k buffer from file", function(done){
       var i = lastIdx
 
-      bf.read(blks[i].hdl, function(err, buf, hdl){
+      bf.load(blks[i].hdl, function(err, buf, hdl){
         if (err) { done(err); return; }
         var siz, str
 
@@ -203,7 +211,7 @@ describe("BlockFile", function(){
               blks[i].str = lorem4kStr
               blks[i].siz = lorem4kSiz
 
-              bf.write(lorem4kBuf, function(err, hdl) {
+              bf.store(lorem4kBuf, function(err, hdl) {
                 if (err) {
                   loop(err)
                   return
@@ -263,7 +271,7 @@ describe("BlockFile", function(){
             function() { return i < end }
             /*body*/
           , function(loop){
-              bf.read(blks[i].hdl, function(err, buf, hdl){
+              bf.load(blks[i].hdl, function(err, buf, hdl){
                 if (err) { done(err); return; }
                 var siz, str
 
@@ -322,7 +330,7 @@ describe("BlockFile", function(){
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      bf.write(lorem4kBuf, function(err, hdl) {
+      bf.store(lorem4kBuf, function(err, hdl) {
         if (err) {
           done(err)
           return
@@ -381,7 +389,7 @@ describe("BlockFile", function(){
               blks[i].str = lorem4kStr
               blks[i].siz = lorem4kSiz
 
-              bf.write(lorem4kBuf, function(err, hdl) {
+              bf.store(lorem4kBuf, function(err, hdl) {
                 if (err) {
                   loop(err)
                   return
@@ -439,7 +447,7 @@ describe("BlockFile", function(){
       blks[i].str = lorem64kStr
       blks[i].siz = lorem64kSiz
 
-      bf.write(lorem64kBuf, function(err, hdl) {
+      bf.store(lorem64kBuf, function(err, hdl) {
         if (err) {
           done(err)
           return
@@ -498,7 +506,7 @@ describe("BlockFile", function(){
               blks[i].str = lorem64kStr
               blks[i].siz = lorem64kSiz
 
-              bf.write(lorem64kBuf, function(err, hdl) {
+              bf.store(lorem64kBuf, function(err, hdl) {
                 if (err) {
                   loop(err)
                   return
@@ -554,7 +562,7 @@ describe("BlockFile", function(){
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      bf.write(lorem4kBuf, function(err, hdl) {
+      bf.store(lorem4kBuf, function(err, hdl) {
         if (err) {
           done(err)
           return
@@ -599,6 +607,7 @@ describe("BlockFile", function(){
           log.info("blks.length="+blks.length)
 
           for (var j=0; j<blks.length; j+=1) {
+            assert(!u.isUndefined(blks[j]), format("blks[%d] is undefined", j))
             if ( u.isUndefined( blks[j] ) ) {
               log.info(format("blks[%d] is undefined", j))
             }
@@ -611,7 +620,7 @@ describe("BlockFile", function(){
             function() { return i < blks.length }
             /*body*/
           , function(loop){
-              bf.read(blks[i].hdl, function(err, buf, hdl){
+              bf.load(blks[i].hdl, function(err, buf, hdl){
                 if (err) { done(err); return; }
                 var siz, str
 
