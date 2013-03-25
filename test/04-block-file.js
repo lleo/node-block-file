@@ -58,11 +58,13 @@ lorem64kBuf.write( lorem64kStr, 2, lorem64kSiz, 'utf8' )
 describe("BlockFile", function(){
   var blks = [], nextIdx, lastIdx
 
-  describe("BlockFile.create()", function(){
+  //describe("BlockFile.create()", function(){
+  describe("BlockFile.open()", function(){
     var bf
 
     it("should create a file "+filename, function(done){
-      BlockFile.create(filename, function(err, bf_){
+      //BlockFile.create(filename, function(err, bf_){
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
         if (err) {
           log.info("create: "+err)
