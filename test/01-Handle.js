@@ -13,7 +13,7 @@ describe("Handle", function(){
       var hdl = new Handle( Handle.MIN_SEGNUM
                           , Handle.MIN_BLOCKNUM
                           , Handle.MIN_SPANNUM )
-      expect(hdl.value).to.equal(0)
+      expect(hdl.encode()).to.equal(0)
     })
   })
 
@@ -29,14 +29,14 @@ describe("Handle", function(){
         , expected = 0xfffdffff>>00  //-131073 int32
 //        , expected = 0xfffdffff>>>00 //-131073 uint32
 
-      expect(hdl.value).to.equal(expected)
+      expect(hdl.encode()).to.equal(expected)
     })
   })
 
   describe("Handle.decode()", function(){
     it ("should decode another handle's 'value' resulting in an identical handle", function(){
       var hdl1 = new Handle(3, 1111, 0)
-        , hdl2 = Handle.decode(hdl1.value)
+        , hdl2 = Handle.decode(hdl1.encode())
       expect(hdl1).to.deep.equal(hdl2)
     })
   })
