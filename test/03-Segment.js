@@ -6,7 +6,6 @@ var Handle = require('../lib/handle')
   , utils = require('../lib/utils')
   , signCRC16 = utils.signCRC16
 //  , validateCRC16 = utils.validateCRC16
-  , BLOCK_SIZE = Handle.BLOCK_SIZE
   , u = require('lodash')
   , assert = require('assert')
   , expect = require('chai').expect
@@ -15,10 +14,11 @@ var Handle = require('../lib/handle')
   , sprintf = require('printf')
   , printf = require('../lib/utils').printf
   , eprintf = require('../lib/utils').eprintf
+  , props = require('../lib/props').defaultProps
 
 describe("Segment", function(){
   var seg, oseg, segNum, hdl
-    , buf = new Buffer(BLOCK_SIZE)
+    , buf = new Buffer(props.blockSize)
 
   buf.fill(0xff)
   signCRC16(buf)
@@ -67,7 +67,7 @@ describe("Segment", function(){
     })
     it("seg should equal the original Segment object", function(){
       //expect(seg).to.deep.equal(oseg)
-      expect(seg.equal(oseg)).to.be.true
+      expect( seg.equal(oseg) ).to.be.true
     })
   })
 })

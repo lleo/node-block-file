@@ -1,8 +1,8 @@
 /* global describe it */
 
-var Handle = require('../lib/handle')
+var props = require('../lib/props').defaultProps
+  , Handle = require('../lib/handle')
   , BlockFile = require('../lib/block_file')
-  , BLOCK_SIZE = BlockFile.BLOCK_SIZE
   , fs = require('fs')
   , u = require('lodash')
   , async = require('async')
@@ -13,6 +13,8 @@ var Handle = require('../lib/handle')
   , format = util.format
   , winston = require('winston')
   , log = winston
+  , BLOCK_SIZE = props.blockSize
+  , NUM_BLOCKNUM = props.numBlkNums
 
 var filename ='test.bf'
   , err, stat
@@ -25,7 +27,6 @@ var filename ='test.bf'
   , lorem64kSiz
   , lorem64kBuf
   , sz
-  , NUM_BLOCKNUM = Handle.NUM_BLOCKNUM
 
 try {
   stat = fs.statSync(filename)
@@ -197,7 +198,7 @@ describe("BlockFile", function(){
 
     it("Write a 4k buffer to file 32751 (NUM_BLKNUM-1) times"
       , function(done){
-          this.timeout(3000)
+          this.timeout(5000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
@@ -261,7 +262,7 @@ describe("BlockFile", function(){
 
     it("Read 32752 (NUM_BLOCKNUM) 4k blocks"
       , function(done){
-          this.timeout(3000)
+          this.timeout(5000)
 
           //log.info("blks.length="+blks.length)
 
@@ -373,7 +374,7 @@ describe("BlockFile", function(){
 
     it("Write a 4k buffer to file 32751 (NUM_BLOCKNUM-1) times"
       , function(done){
-          this.timeout(3000)
+          this.timeout(5000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
@@ -604,7 +605,7 @@ describe("BlockFile", function(){
 
     it("Read all blks.length blks[i].hdl"
       , function(done){
-          this.timeout(4000)
+          this.timeout(5000)
 
           log.info("blks.length="+blks.length)
 
