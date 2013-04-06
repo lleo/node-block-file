@@ -17,7 +17,7 @@ var props = require('../lib/props').defaultProps
   , NUM_BLOCKNUM = props.numBlkNums
 
 var filename ='test.bf'
-  , err, stat
+  , err, fnStat
   , lorem4k_fn = 'lorem-ipsum.4k.txt'
   , lorem4kStr
   , lorem4kSiz
@@ -27,9 +27,10 @@ var filename ='test.bf'
   , lorem64kSiz
   , lorem64kBuf
   , sz
+  , outputFN = "stats.txt"
 
 try {
-  stat = fs.statSync(filename)
+  fnStat = fs.statSync(filename)
 } catch (x) {
 //  if (x.code == "ENOEXIST")
 //    log.info("file "+filename+"does not exist")
@@ -37,7 +38,7 @@ try {
     log.info(x)
 }
 
-if (stat) {
+if (fnStat) {
   fs.unlinkSync(filename)
 }
 
@@ -651,6 +652,15 @@ describe("BlockFile", function(){
 
   })
 
+  describe("Write the stats aut to "+outputFN, function(){
+    it("should dump BlockFile.STATS", function(done){
+      fs.writeFile(outputFN, BlockFile.STATS.toString({values:"both"})
+                  , function(){
+                      if (err) { done(err); return }
+                      done()
+                    })
+    })
+  })
 
   //describe("BlockFile.open()", function(){
   //  it("", function(){})
