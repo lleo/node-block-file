@@ -251,7 +251,7 @@ describe("BlockFile", function(){
 
     it("Read 32752 (NUM_BLOCKNUM) 4k blocks"
       , function(done){
-          this.timeout(5000)
+          this.timeout(10000)
 
           var i = nextIdx - NUM_BLOCKNUM
             , end = i + NUM_BLOCKNUM
@@ -589,7 +589,7 @@ describe("BlockFile", function(){
 
     it("Read all blks.length blks[i].hdl"
       , function(done){
-          this.timeout(5000)
+          this.timeout(10000)
 
           for (var j=0; j<blks.length; j+=1) {
             assert(!u.isUndefined(blks[j]), format("blks[%d] is undefined", j))
@@ -631,7 +631,7 @@ describe("BlockFile", function(){
 
   describe("Write the stats aut to "+outputFN, function(){
     it("should dump BlockFile.STATS", function(done){
-      fs.writeFile(outputFN, BlockFile.STATS.toString({values:"both"})
+      fs.writeFile(outputFN, BlockFile.STATS.toString({values:"both"})+"\n"
                   , function(){
                       if (err) { done(err); return }
                       done()
