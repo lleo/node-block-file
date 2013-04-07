@@ -11,8 +11,6 @@ var props = require('../lib/props').defaultProps
   , util = require('util')
   , inspect = util.inspect
   , format = util.format
-  , winston = require('winston')
-  , log = winston
   , BLOCK_SIZE = props.blockSize
   , NUM_BLOCKNUM = props.numBlkNums
 
@@ -32,10 +30,7 @@ var filename ='test.bf'
 try {
   fnStat = fs.statSync(filename)
 } catch (x) {
-//  if (x.code == "ENOEXIST")
-//    log.info("file "+filename+"does not exist")
-//  else
-    log.info(x)
+  console.warn(x)
 }
 
 if (fnStat) {
@@ -44,14 +39,12 @@ if (fnStat) {
 
 lorem4kStr  = fs.readFileSync(lorem4k_fn, 'utf8')
 lorem4kSiz = Buffer.byteLength( lorem4kStr, 'utf8' )
-log.info("lorem4kSiz="+lorem4kSiz)
 lorem4kBuf = new Buffer( 2 + lorem4kSiz )
 lorem4kBuf.writeUInt16BE( lorem4kSiz, 0 )
 lorem4kBuf.write( lorem4kStr, 2, lorem4kSiz, 'utf8' )
 
 lorem64kStr  = fs.readFileSync(lorem64k_fn, 'utf8')
 lorem64kSiz = Buffer.byteLength( lorem64kStr, 'utf8' )
-log.info("lorem64kSiz="+lorem64kSiz)
 lorem64kBuf = new Buffer( 2 + lorem64kSiz )
 lorem64kBuf.writeUInt16BE( lorem64kSiz, 0 )
 lorem64kBuf.write( lorem64kStr, 2, lorem64kSiz, 'utf8' )
@@ -69,7 +62,6 @@ describe("BlockFile", function(){
       BlockFile.open(filename, function(err, bf_){
         bf = bf_
         if (err) {
-          log.info("create: "+err)
           done(err)
           return
         }
@@ -160,13 +152,9 @@ describe("BlockFile", function(){
         var siz, str
 
         siz = buf.readUInt16BE(0)
-        //bf.log("siz = %d", siz)
-        //bf.log("blks[%d].siz = %d", 0, blks[i].siz)
         expect(siz).to.equal(blks[i].siz)
 
         str = buf.toString('utf8', 2, 2+siz)
-        //bf.log("str=>%s<", str)
-        //bf.log("blks[%d].str=>%s<", 0, blks[i].str)
         expect(str).to.equal(blks[i].str)
 
         done()
@@ -265,8 +253,6 @@ describe("BlockFile", function(){
       , function(done){
           this.timeout(5000)
 
-          //log.info("blks.length="+blks.length)
-
           var i = nextIdx - NUM_BLOCKNUM
             , end = i + NUM_BLOCKNUM
 
@@ -280,8 +266,6 @@ describe("BlockFile", function(){
                 var siz, str
 
                 siz = buf.readUInt16BE(0)
-                //bf.log("siz = %d", siz)
-                //bf.log("blks[%d].siz = %d", i, blks[i].siz)
                 expect(siz).to.equal(blks[0].siz)
 
                 str = buf.toString('utf8', 2, 2+siz)
@@ -300,7 +284,6 @@ describe("BlockFile", function(){
         })
 
     it("bf.close()", function(done){
-      log.info( "Memory Usage", process.memoryUsage() )
       bf.close(done)
     })
 
@@ -608,13 +591,8 @@ describe("BlockFile", function(){
       , function(done){
           this.timeout(5000)
 
-          log.info("blks.length="+blks.length)
-
           for (var j=0; j<blks.length; j+=1) {
             assert(!u.isUndefined(blks[j]), format("blks[%d] is undefined", j))
-            if ( u.isUndefined( blks[j] ) ) {
-              log.info(format("blks[%d] is undefined", j))
-            }
           }
 
           var i = 0
@@ -646,7 +624,6 @@ describe("BlockFile", function(){
         })
 
     it("bf.close()", function(done){
-      log.info( "Memory Usage", process.memoryUsage() )
       bf.close(done)
     })
 
