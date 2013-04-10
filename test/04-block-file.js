@@ -106,15 +106,13 @@ describe("BlockFile", function(){
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      bf.store(lorem4kBuf, function(err, hdl) {
-        if (err) {
-          done(err)
-          return
+      var storep = bf.store(lorem4kBuf)
+      storep.then(
+        function(hdl) {
+          blks[i].hdl = hdl;
+          done()
         }
-
-        blks[i].hdl = hdl;
-        done()
-      })
+      , function(err){ done(err) })
     })
 
     it("Should now have ONE segment", function(){
@@ -146,19 +144,21 @@ describe("BlockFile", function(){
 
     it("Read the previous 4k buffer from file", function(done){
       var i = lastIdx
+        , loadp = bf.load(blks[i].hdl)
 
-      bf.load(blks[i].hdl, function(err, buf, hdl){
-        if (err) { done(err); return; }
-        var siz, str
+      loadp.spread(
+        function(buf, hdl){
+          var siz, str
 
-        siz = buf.readUInt16BE(0)
-        expect(siz).to.equal(blks[i].siz)
+          siz = buf.readUInt16BE(0)
+          expect(siz).to.equal(blks[i].siz)
 
-        str = buf.toString('utf8', 2, 2+siz)
-        expect(str).to.equal(blks[i].str)
+          str = buf.toString('utf8', 2, 2+siz)
+          expect(str).to.equal(blks[i].str)
 
-        done()
-      })
+          done()
+        }
+      , function(err){ done(err) })
     })
 
     it("bf.close()", function(done){
@@ -203,17 +203,14 @@ describe("BlockFile", function(){
               blks[i].str = lorem4kStr
               blks[i].siz = lorem4kSiz
 
-              bf.store(lorem4kBuf, function(err, hdl) {
-                if (err) {
-                  loop(err)
-                  return
+              var storep = bf.store(lorem4kBuf)
+              storep.then(
+                function(hdl) {
+                  blks[i].hdl = hdl;
+                  i += 1
+                  loop()
                 }
-
-                blks[i].hdl = hdl;
-
-                i += 1
-                loop()
-             })
+              , function(err) { loop(err) })
             }
             /*results*/
           , function(err){
@@ -261,20 +258,23 @@ describe("BlockFile", function(){
             function() { return i < end }
             /*body*/
           , function(loop){
-              bf.load(blks[i].hdl, function(err, buf, hdl){
-                if (err) { done(err); return; }
-                var siz, str
+              var loadp = bf.load(blks[i].hdl)
 
-                siz = buf.readUInt16BE(0)
-                expect(siz).to.equal(blks[0].siz)
+              loadp.spread(
+                function(buf, hdl){
+                  var siz, str
 
-                str = buf.toString('utf8', 2, 2+siz)
+                  siz = buf.readUInt16BE(0)
+                  expect(siz).to.equal(blks[0].siz)
 
-                expect(str).to.equal(blks[i].str)
+                  str = buf.toString('utf8', 2, 2+siz)
 
-                i += 1
-                loop()
-              })
+                  expect(str).to.equal(blks[i].str)
+
+                  i += 1
+                  loop()
+                }
+              , loop)
             }
             /*results*/
           , function(err){
@@ -312,20 +312,18 @@ describe("BlockFile", function(){
       nextIdx = lastIdx + 1
 
       var i = lastIdx
+        , storep = bf.store(lorem4kBuf)
 
       blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      bf.store(lorem4kBuf, function(err, hdl) {
-        if (err) {
-          done(err)
-          return
+      storep.then(
+        function(hdl) {
+          blks[i].hdl = hdl
+          done()
         }
-
-        blks[i].hdl = hdl;
-        done()
-      })
+      , function(err){ done(err) })
     })
 
     it("Should now have TWO segments", function(){
@@ -370,23 +368,17 @@ describe("BlockFile", function(){
             function() { return i < nextIdx }
             /*body*/
           , function(loop){
-              blks[i] = {
-                /* str: lorem, siz: num, hdl: Handle */
-              }
-              blks[i].str = lorem4kStr
-              blks[i].siz = lorem4kSiz
+              blks[i] = { str: lorem4kStr, siz: lorem4kSiz, hdl: undefined }
 
-              bf.store(lorem4kBuf, function(err, hdl) {
-                if (err) {
-                  loop(err)
-                  return
+              var storep = bf.store(lorem4kBuf)
+
+              storep.then(
+                function(hdl) {
+                  blks[i].hdl = hdl;
+                  i += 1
+                  loop()
                 }
-
-                blks[i].hdl = hdl;
-
-                i += 1
-                loop()
-             })
+              , function(err){ loop(err) })
             }
             /*results*/
           , function(err){
@@ -434,15 +426,14 @@ describe("BlockFile", function(){
       blks[i].str = lorem64kStr
       blks[i].siz = lorem64kSiz
 
-      bf.store(lorem64kBuf, function(err, hdl) {
-        if (err) {
-          done(err)
-          return
-        }
+      var storep = bf.store(lorem64kBuf)
 
-        blks[i].hdl = hdl;
-        done()
-      })
+      storep.then(
+        function(hdl) {
+          blks[i].hdl = hdl;
+          done()
+        }
+      , function(err){ done(err) })
     })
 
     it("Should now have THREE segments", function(){
@@ -493,17 +484,14 @@ describe("BlockFile", function(){
               blks[i].str = lorem64kStr
               blks[i].siz = lorem64kSiz
 
-              bf.store(lorem64kBuf, function(err, hdl) {
-                if (err) {
-                  loop(err)
-                  return
+              var storep = bf.store(lorem64kBuf)
+              storep.then(
+                function(hdl){
+                  blks[i].hdl = hdl
+                  i += 1
+                  loop()
                 }
-
-                blks[i].hdl = hdl;
-
-                i += 1
-                loop()
-             })
+              , function(err){ loop(err) })
             }
             /*results*/
           , function(err){
@@ -549,15 +537,13 @@ describe("BlockFile", function(){
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      bf.store(lorem4kBuf, function(err, hdl) {
-        if (err) {
-          done(err)
-          return
+      var storep = bf.store(lorem4kBuf)
+      storep.then(
+        function(hdl) {
+          blks[i].hdl = hdl;
+          done()
         }
-
-        blks[i].hdl = hdl;
-        done()
-      })
+      , function(err){ done(err) })
     })
 
     it("should now have FOUR segments", function(){
@@ -602,19 +588,21 @@ describe("BlockFile", function(){
             function() { return i < blks.length }
             /*body*/
           , function(loop){
-              bf.load(blks[i].hdl, function(err, buf, hdl){
-                if (err) { done(err); return; }
-                var siz, str
+              var loadp = bf.load(blks[i].hdl)
+              loadp.spread(
+                function(buf, hdl){
+                  var siz, str
 
-                siz = buf.readUInt16BE(0)
-                expect(siz).to.equal(blks[i].siz)
+                  siz = buf.readUInt16BE(0)
+                  expect(siz).to.equal(blks[i].siz)
 
-                str = buf.toString('utf8', 2, 2+siz)
-                expect(str).to.equal(blks[i].str)
+                  str = buf.toString('utf8', 2, 2+siz)
+                  expect(str).to.equal(blks[i].str)
 
-                i += 1
-                loop()
-              })
+                  i += 1
+                  loop()
+                }
+              , loop)
             }
             /*results*/
           , function(err){
