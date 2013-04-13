@@ -58,22 +58,25 @@ describe("BlockFile", function(){
     var bf
 
     it("should create a file "+filename, function(done){
-      //BlockFile.create(filename, function(err, bf_){
-      BlockFile.open(filename, function(err, bf_){
-        bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
-        //expect(bf instanceof BlockFile).to.be.true
-        done()
-      })
+      BlockFile.open(filename)
+      .then(function(bf_){ bf = bf_; done() }, done )
+
+      //BlockFile.open(filename, function(err, bf_){
+      //  bf = bf_
+      //  if (err) {
+      //    done(err)
+      //    return
+      //  }
+      //  expect(bf).to.be.an.instanceof(BlockFile)
+      //  //expect(bf instanceof BlockFile).to.be.true
+      //  done()
+      //})
     })
 
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -83,16 +86,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
-        //expect(bf instanceof BlockFile).to.be.true
         done()
-      })
+      }, done )
     })
 
 
@@ -120,7 +119,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -130,15 +130,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      })
+      }, done )
     })
 
 
@@ -162,7 +159,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -172,16 +170,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
-        //expect(bf instanceof BlockFile).to.be.true
         done()
-      })
+      }, done )
     })
 
 
@@ -224,7 +218,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -234,15 +229,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      })
+      }, done )
     })
 
 
@@ -284,7 +276,8 @@ describe("BlockFile", function(){
         })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -294,15 +287,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      })
+      }, done )
     })
 
 
@@ -331,7 +321,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -341,16 +332,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
-        //expect(bf instanceof BlockFile).to.be.true
         done()
-      })
+      }, done )
     })
 
 
@@ -392,7 +379,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -402,16 +390,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
-        //expect(bf instanceof BlockFile).to.be.true
         done()
-      })
+      }, done )
     })
 
 
@@ -441,7 +425,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -451,16 +436,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
-        //expect(bf instanceof BlockFile).to.be.true
         done()
-      })
+      }, done )
     })
 
 
@@ -505,7 +486,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -514,16 +496,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
-        //expect(bf instanceof BlockFile).to.be.true
         done()
-      })
+      }, done )
     })
 
 
@@ -551,7 +529,8 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -561,15 +540,12 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename, function(err, bf_){
+      BlockFile.open(filename)
+      .then(function(bf_){
+        expect(bf_).to.be.an.instanceof(BlockFile)
         bf = bf_
-        if (err) {
-          done(err)
-          return
-        }
-        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      })
+      }, done )
     })
 
 
@@ -612,7 +588,8 @@ describe("BlockFile", function(){
         })
 
     it("bf.close()", function(done){
-      bf.close(done)
+      //bf.close(done)
+      bf.close().then(done, done)
     })
 
   })
@@ -627,7 +604,4 @@ describe("BlockFile", function(){
     })
   })
 
-  //describe("BlockFile.open()", function(){
-  //  it("", function(){})
-  //})
 })
