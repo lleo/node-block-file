@@ -1,21 +1,22 @@
 /* global describe it */
 
-var props = require('../lib/props').defaultProps
-  , Handle = require('../lib/handle')
+var Handle = require('../lib/handle')
   , BlockFile = require('../lib/block_file')
   , fs = require('fs')
-  , u = require('lodash')
   , async = require('async')
+  , Vow = require('vow')
   , assert = require('assert')
   , expect = require('chai').expect
   , util = require('util')
-  , inspect = util.inspect
   , format = util.format
-  , BLOCK_SIZE = props.blockSize
+
+var Props = require('../lib/props')
+  , props = Props.defaultProps
+  , NUM_SPANNUM = props.numSpanNums
   , NUM_BLOCKNUM = props.numBlkNums
 
 var filename ='test.bf'
-  , err, fnStat
+  , fnStat
   , lorem4k_fn = 'lorem-ipsum.4k.txt'
   , lorem4kStr
   , lorem4kSiz
@@ -24,7 +25,6 @@ var filename ='test.bf'
   , lorem64kStr
   , lorem64kSiz
   , lorem64kBuf
-  , sz
   , outputFN = "stats.txt"
 
 try {
@@ -39,15 +39,17 @@ if (fnStat) {
 
 lorem4kStr  = fs.readFileSync(lorem4k_fn, 'utf8')
 lorem4kSiz = Buffer.byteLength( lorem4kStr, 'utf8' )
-lorem4kBuf = new Buffer( 2 + lorem4kSiz )
-lorem4kBuf.writeUInt16BE( lorem4kSiz, 0 )
-lorem4kBuf.write( lorem4kStr, 2, lorem4kSiz, 'utf8' )
+lorem4kBuf = new Buffer( 4 + lorem4kSiz )
+lorem4kBuf.writeUInt32BE( lorem4kSiz, 0 )
+lorem4kBuf.write( lorem4kStr, 4, lorem4kSiz, 'utf8' )
+assert.ok(lorem4kBuf.length < 4*1024) //lorem4kStr.length < 4*1024-4
 
 lorem64kStr  = fs.readFileSync(lorem64k_fn, 'utf8')
 lorem64kSiz = Buffer.byteLength( lorem64kStr, 'utf8' )
-lorem64kBuf = new Buffer( 2 + lorem64kSiz )
-lorem64kBuf.writeUInt16BE( lorem64kSiz, 0 )
-lorem64kBuf.write( lorem64kStr, 2, lorem64kSiz, 'utf8' )
+lorem64kBuf = new Buffer( 4 + lorem64kSiz )
+lorem64kBuf.writeUInt32BE( lorem64kSiz, 0 )
+lorem64kBuf.write( lorem64kStr, 4, lorem64kSiz, 'utf8' )
+assert.ok(lorem64kBuf.length < 64*1024) //lorem64kStr.length < 64*1024-4
 
 
 describe("BlockFile", function(){
@@ -147,10 +149,10 @@ describe("BlockFile", function(){
         function(buf, hdl){
           var siz, str
 
-          siz = buf.readUInt16BE(0)
+          siz = buf.readUInt32BE(0)
           expect(siz).to.equal(blks[i].siz)
 
-          str = buf.toString('utf8', 2, 2+siz)
+          str = buf.toString('utf8', 4, 4+siz)
           expect(str).to.equal(blks[i].str)
 
           done()
@@ -181,13 +183,12 @@ describe("BlockFile", function(){
 
     it("Write a 4k buffer to file 32751 (NUM_BLKNUM-1) times"
       , function(done){
-          this.timeout(5000)
+          this.timeout(10000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
 
           var i = lastIdx
-
           async.whilst(
             /*test*/
             function() { return i < nextIdx }
@@ -197,8 +198,7 @@ describe("BlockFile", function(){
               blks[i].str = lorem4kStr
               blks[i].siz = lorem4kSiz
 
-              var storep = bf.store(lorem4kBuf)
-              storep.then(
+              bf.store(lorem4kBuf).then(
                 function(hdl) {
                   blks[i].hdl = hdl;
                   i += 1
@@ -207,12 +207,9 @@ describe("BlockFile", function(){
               , function(err) { loop(err) })
             }
             /*results*/
-          , function(err){
-              done(err)
-            }
-          )
-        })
+          , function(err){ done(err) } )
 
+        })
     it("Should STILL have only ONE segment", function(){
       expect(bf.segments.length).to.equal(1)
     })
@@ -256,10 +253,10 @@ describe("BlockFile", function(){
                 function(buf, hdl){
                   var siz, str
 
-                  siz = buf.readUInt16BE(0)
+                  siz = buf.readUInt32BE(0)
                   expect(siz).to.equal(blks[0].siz)
 
-                  str = buf.toString('utf8', 2, 2+siz)
+                  str = buf.toString('utf8', 4, 4+siz)
 
                   expect(str).to.equal(blks[i].str)
 
@@ -269,10 +266,8 @@ describe("BlockFile", function(){
               , loop)
             }
             /*results*/
-          , function(err){
-              done(err)
-            }
-          )
+          , function(err){ done(err) })
+
         })
 
     it("bf.close()", function(done){
@@ -349,7 +344,6 @@ describe("BlockFile", function(){
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
 
           var i = lastIdx
-
           async.whilst(
             /*test*/
             function() { return i < nextIdx }
@@ -368,10 +362,7 @@ describe("BlockFile", function(){
               , function(err){ loop(err) })
             }
             /*results*/
-          , function(err){
-              done(err)
-            }
-          )
+          , function(err){ done(err) })
         })
 
     it("Should STILL have TWO segments", function(){
@@ -445,23 +436,20 @@ describe("BlockFile", function(){
     })
 
 
-    it("write a 64k buffer to file 2046 (NUM_BLOCKNUM/(MAX_SPANNUM+1)-1) times"
+    it("write a 64k buffer to file 2046 (NUM_BLOCKNUM/NUM_SPANNUM - 1) times"
       , function(done){
           this.timeout(5000)
 
           lastIdx = nextIdx
-          nextIdx = lastIdx + (NUM_BLOCKNUM/16 - 1)
+          nextIdx = lastIdx + (NUM_BLOCKNUM/NUM_SPANNUM - 1)
 
           var i = lastIdx
-
           async.whilst(
             /*test*/
             function() { return i < nextIdx }
             /*body*/
           , function(loop){
-              blks[i] = {
-                /* str: lorem, siz: num, hdl: Handle */
-              }
+              blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
               blks[i].str = lorem64kStr
               blks[i].siz = lorem64kSiz
 
@@ -475,10 +463,7 @@ describe("BlockFile", function(){
               , function(err){ loop(err) })
             }
             /*results*/
-          , function(err){
-              done(err)
-            }
-          )
+          , function(err){ done(err) })
         })
 
     it("Should STILL have THREE segments", function(){
@@ -554,11 +539,10 @@ describe("BlockFile", function(){
           this.timeout(10000)
 
           for (var j=0; j<blks.length; j+=1) {
-            assert(!u.isUndefined(blks[j]), format("blks[%d] is undefined", j))
+            assert(typeof blks[j] != 'undefined', format("blks[%d] is undefined", j))
           }
 
           var i = 0
-
           async.whilst(
             /*test*/
             function() { return i < blks.length }
@@ -569,10 +553,10 @@ describe("BlockFile", function(){
                 function(buf, hdl){
                   var siz, str
 
-                  siz = buf.readUInt16BE(0)
+                  siz = buf.readUInt32BE(0)
                   expect(siz).to.equal(blks[i].siz)
 
-                  str = buf.toString('utf8', 2, 2+siz)
+                  str = buf.toString('utf8', 4, 4+siz)
                   expect(str).to.equal(blks[i].str)
 
                   i += 1
@@ -581,10 +565,7 @@ describe("BlockFile", function(){
               , loop)
             }
             /*results*/
-          , function(err){
-              done(err)
-            }
-          )
+          , function(err){ done(err) })
         })
 
     it("bf.close()", function(done){
@@ -597,10 +578,7 @@ describe("BlockFile", function(){
   describe("Write the stats aut to "+outputFN, function(){
     it("should dump BlockFile.STATS", function(done){
       fs.writeFile(outputFN, BlockFile.STATS.toString({values:"both"})+"\n"
-                  , function(){
-                      if (err) { done(err); return }
-                      done()
-                    })
+                  , function(err){ done(err) })
     })
   })
 
