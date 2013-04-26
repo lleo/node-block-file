@@ -98,10 +98,10 @@ var metaProps = { numHandleBits: 64
   describe("Create BlockFile", function(){
     it("reset BlockFile.STATS", function(done){
       BlockFile.STATS.reset()
-      utils.err("\nsegNumBits  = %j", props.segNumBits)
-      utils.err("blkNumBits  = %j", props.blkNumBits)
-      utils.err("spanNumBits = %j", props.spanNumBits)
-      utils.err("lorem256kSiz = %j", lorem256kSiz)
+      //utils.err("\nsegNumBits  = %j", props.segNumBits)
+      //utils.err("blkNumBits  = %j", props.blkNumBits)
+      //utils.err("spanNumBits = %j", props.spanNumBits)
+      //utils.err("lorem256kSiz = %j", lorem256kSiz)
 
       done()
     })
@@ -138,7 +138,7 @@ var metaProps = { numHandleBits: 64
       lastIdx = 0
       nextIdx = lastIdx + (bf.props.numBlkNums-1)
 
-      utils.err("numBlkNums-1 = %j", bf.props.numBlkNums-1)
+      //utils.err("numBlkNums-1 = %j", bf.props.numBlkNums-1)
 
       var i = lastIdx
       async.whilst(
@@ -166,7 +166,7 @@ var metaProps = { numHandleBits: 64
     })
 
     it("should only have one segemnt", function(){
-      utils.err("lastHdl = %s", lastHdl)
+      //utils.err("lastHdl = %s", lastHdl)
       expect(bf.segments.length).to.equal(1)
     })
 
@@ -188,7 +188,7 @@ var metaProps = { numHandleBits: 64
       lastIdx = nextIdx
       nextIdx += ceil(bf.props.numBlkNums/64) - 1
 
-      utils.err("ceil(numBlkNums/64-1 = %j)", ceil(bf.props.numBlkNums/64)-1)
+      //utils.err("ceil(numBlkNums/64-1 = %j)", ceil(bf.props.numBlkNums/64)-1)
 
       var i = lastIdx
       async.whilst(
@@ -277,13 +277,13 @@ var metaProps = { numHandleBits: 64
             assert(typeof blks[j] != 'undefined', format("blks[%d] is undefined", j))
           }
 
-          utils.err("blks.length = %j", blks.length)
+          //utils.err("blks.length = %j", blks.length)
 
           var p, p0 = p = Vow.promise()
           blks.forEach(function(blk, i){
             p = p.then(function(r){
-                  console.log("r = %j", r)
-                  console.log("i = %j", i)
+                  //console.log("r = %j", r)
+                  //console.log("i = %j", i)
                   //console.log("bf.load(blks[%j].hdl)", r)
                   bf.load(blk.hdl)
                   .spread(function(buf, hdl){
