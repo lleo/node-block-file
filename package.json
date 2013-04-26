@@ -15,8 +15,7 @@
 , "scripts"     : { "test" : "mocha -R spec -s 1" }
 , "dependencies": { "crc"     : ">=0.2.0"
 		  , "async"   : ">=0.2.6"
-		  , "vow"     : ">=0.3.0"
-                  , "vow-fs"  : ">=0.1.10"
+		  , "p-promise" : ">=0.1.4"
 		  , "lodash"  : ">=1.0.1"
 		  , "stats-api" : ">=1.0.0" }
 , "devDependencies": { "buffer-equal" : "*"
