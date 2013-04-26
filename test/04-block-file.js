@@ -4,7 +4,6 @@ var Handle = require('../lib/handle')
   , BlockFile = require('../lib/block_file')
   , fs = require('fs')
   , async = require('async')
-  , Vow = require('vow')
   , assert = require('assert')
   , expect = require('chai').expect
   , util = require('util')
@@ -110,6 +109,7 @@ describe("BlockFile", function(){
       var storep = bf.store(lorem4kBuf)
       storep.then(
         function(hdl) {
+          //console.log("blks[%d].hdl = %s", i, hdl)
           blks[i].hdl = hdl;
           done()
         }
@@ -181,9 +181,9 @@ describe("BlockFile", function(){
     })
 
 
-    it("Write a 4k buffer to file 32751 (NUM_BLKNUM-1) times"
+    it("Write a 4k buffer to file 32751 (NUM_BLOCKNUM-1) times"
       , function(done){
-          this.timeout(10000)
+          this.timeout(10*1000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
@@ -200,6 +200,7 @@ describe("BlockFile", function(){
 
               bf.store(lorem4kBuf).then(
                 function(hdl) {
+                  //console.log("blks[%d].hdl = %s", i, hdl)
                   blks[i].hdl = hdl;
                   i += 1
                   loop()
@@ -237,7 +238,7 @@ describe("BlockFile", function(){
 
     it("Read 32752 (NUM_BLOCKNUM) 4k blocks"
       , function(done){
-          this.timeout(10000)
+          this.timeout(10*1000)
 
           var i = nextIdx - NUM_BLOCKNUM
             , end = i + NUM_BLOCKNUM
@@ -338,7 +339,7 @@ describe("BlockFile", function(){
 
     it("Write a 4k buffer to file 32751 (NUM_BLOCKNUM-1) times"
       , function(done){
-          this.timeout(5000)
+          this.timeout(10*1000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
@@ -438,7 +439,7 @@ describe("BlockFile", function(){
 
     it("write a 64k buffer to file 2046 (NUM_BLOCKNUM/NUM_SPANNUM - 1) times"
       , function(done){
-          this.timeout(5000)
+          this.timeout(5*1000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM/NUM_SPANNUM - 1)
@@ -536,7 +537,7 @@ describe("BlockFile", function(){
 
     it("Read all blks.length blks[i].hdl"
       , function(done){
-          this.timeout(10000)
+          this.timeout(10*1000)
 
           for (var j=0; j<blks.length; j+=1) {
             assert(typeof blks[j] != 'undefined', format("blks[%d] is undefined", j))
