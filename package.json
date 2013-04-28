@@ -1,6 +1,6 @@
 {
   "name"        : "block-file"
-, "version"     : "1.0.0"
+, "version"     : "1.0.1"
 , "description" : "A library to read/write blocks from a file"
 , "keywords"    : ["block", "buffer", "storage"]
 , "homepage"    : "https://github/com/lleo/node-bptree"
@@ -12,6 +12,7 @@
                   , "email": "lleoem@gmail.com"
                   , "url": "http://lleo-blog.blogspot.com/" }
 , "main"        : "lib/block_file.js"
+, "license"     : "MIT"
 , "scripts"     : { "test" : "mocha -R spec -s 1" }
 , "dependencies": { "crc"     : ">=0.2.0"
 		  , "async"   : ">=0.2.6"
