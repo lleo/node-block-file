@@ -2,12 +2,17 @@
 
 var Handle = require('../lib/handle')
   , BlockFile = require('../lib/block_file')
+  , utils = require('../lib/utils')
   , fs = require('fs')
   , async = require('async')
+  , Y = require('ya-promise')
   , assert = require('assert')
   , expect = require('chai').expect
   , util = require('util')
   , format = util.format
+
+//Y.nextTick = process.nextTick
+var USE_ASYNC = /^(?:y|yes|t|true)$/i.test(process.env['USE_ASYNC'])
 
 var Props = require('../lib/props')
   , props = Props.defaultProps
@@ -188,27 +193,53 @@ describe("BlockFile", function(){
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
 
-          var i = lastIdx
-          async.whilst(
-            /*test*/
-            function() { return i < nextIdx }
-            /*body*/
-          , function(loop){
-              blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-              blks[i].str = lorem4kStr
-              blks[i].siz = lorem4kSiz
+          if (USE_ASYNC) {
+            var i = lastIdx
+            async.whilst(
+              /*test*/
+              function() { return i < nextIdx }
+              /*body*/
+            , function(loop){
+                blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
+                blks[i].str = lorem4kStr
+                blks[i].siz = lorem4kSiz
 
-              bf.store(lorem4kBuf).then(
-                function(hdl) {
-                  //console.log("blks[%d].hdl = %s", i, hdl)
-                  blks[i].hdl = hdl;
-                  i += 1
-                  loop()
-                }
-              , function(err) { loop(err) })
-            }
-            /*results*/
-          , function(err){ done(err) } )
+                bf.store(lorem4kBuf).then(
+                  function(hdl) {
+                    //console.log("blks[%d].hdl = %s", i, hdl)
+                    blks[i].hdl = hdl;
+                    i += 1
+                    loop()
+                  }
+                , function(err) { loop(err) })
+              }
+              /*results*/
+            , function(err){ done(err) } )
+          }
+          else {
+            var d = Y.defer()
+              , p = d.promise
+
+            for (var j = lastIdx; j < nextIdx; j++)
+              p = p.then(
+                function(i){
+                  blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
+                  blks[i].str = lorem4kStr
+                  blks[i].siz = lorem4kSiz
+
+                  return bf.store(lorem4kBuf).then(
+                    function(hdl) {
+                      //console.log("blks[%d].hdl = %s", i, hdl)
+                      blks[i].hdl = hdl;
+                      return i + 1
+                    })
+                })
+
+            p.then( function(j){ console.log("done: j = %j", j); done() }
+                  , function(err){ done(err) } )
+
+            d.resolve(lastIdx)
+          }
 
         })
     it("Should STILL have only ONE segment", function(){
@@ -240,36 +271,67 @@ describe("BlockFile", function(){
       , function(done){
           this.timeout(10*1000)
 
-          var i = nextIdx - NUM_BLOCKNUM
+          var start = nextIdx - NUM_BLOCKNUM
             , end = i + NUM_BLOCKNUM
 
-          async.whilst(
-            /*test*/
-            function() { return i < end }
-            /*body*/
-          , function(loop){
-              var loadp = bf.load(blks[i].hdl)
+          if (USE_ASYNC) {
+            var i = start
+            async.whilst(
+              /*test*/
+              function() { return i < end }
+              /*body*/
+            , function(loop){
+                var loadp = bf.load(blks[i].hdl)
 
-              loadp.spread(
-                function(buf, hdl){
-                  var siz, str
+                loadp.spread(
+                  function(buf, hdl){
+                    var siz, str
 
-                  siz = buf.readUInt32BE(0)
-                  expect(siz).to.equal(blks[0].siz)
+                    siz = buf.readUInt32BE(0)
+                    expect(siz).to.equal(blks[0].siz)
 
-                  str = buf.toString('utf8', 4, 4+siz)
+                    str = buf.toString('utf8', 4, 4+siz)
 
-                  expect(str).to.equal(blks[i].str)
+                    expect(str).to.equal(blks[i].str)
 
-                  i += 1
-                  loop()
-                }
-              , loop)
-            }
-            /*results*/
-          , function(err){ done(err) })
+                    i += 1
+                    loop()
+                  }
+                , loop)
+              }
+              /*results*/
+            , function(err){ done(err) })
+          }
+          else {
+            var d = Y.defer()
+              , p = d.promise
 
-        })
+            for (var j = start; j < end; j++)
+              p = p.then(
+                function(i){
+                  var loadp = bf.load(blks[i].hdl)
+
+                  return loadp.spread(
+                    function(buf, hdl){
+                      var siz, str
+
+                      siz = buf.readUInt32BE(0)
+                      expect(siz).to.equal(blks[0].siz)
+
+                      str = buf.toString('utf8', 4, 4+siz)
+
+                      expect(str).to.equal(blks[i].str)
+
+                      return i + 1
+                    })
+                })
+
+            p.then( function(j){ console.log("done: j = %j", j); done() }
+                  , function(err){ done(err) } )
+
+            d.resolve(start)
+          }
+        }) //it
 
     it("bf.close()", function(done){
       //bf.close(done)
@@ -344,26 +406,55 @@ describe("BlockFile", function(){
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
 
-          var i = lastIdx
-          async.whilst(
-            /*test*/
-            function() { return i < nextIdx }
-            /*body*/
-          , function(loop){
-              blks[i] = { str: lorem4kStr, siz: lorem4kSiz, hdl: undefined }
+          if (USE_ASYNC) {
+            var i = lastIdx
+            async.whilst(
+              /*test*/
+              function() { return i < nextIdx }
+              /*body*/
+            , function(loop){
+                //blks[i] = { str: lorem4kStr, siz: lorem4kSiz, hdl: undefined }
+                blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
+                blks[i].str = lorem4kStr
+                blks[i].siz = lorem4kSiz
 
-              var storep = bf.store(lorem4kBuf)
+                var storep = bf.store(lorem4kBuf)
 
-              storep.then(
-                function(hdl) {
-                  blks[i].hdl = hdl;
-                  i += 1
-                  loop()
-                }
-              , function(err){ loop(err) })
-            }
-            /*results*/
-          , function(err){ done(err) })
+                storep.then(
+                  function(hdl) {
+                    blks[i].hdl = hdl;
+                    i += 1
+                    loop()
+                  }
+                , function(err){ loop(err) })
+              }
+              /*results*/
+            , function(err){ done(err) })
+          }
+          else {
+            var d = Y.defer()
+              , p = d.promise
+
+            for (var j = lastIdx; j < nextIdx; j++)
+              p = p.then(
+                function(i){
+                  //blks[i] = {str: lorem4kStr, siz: lorem4kSiz, hdl: undefined}
+                  blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
+                  blks[i].str = lorem4kStr
+                  blks[i].siz = lorem4kSiz
+
+                  return bf.store(lorem4kBuf).then(
+                    function(hdl) {
+                      blks[i].hdl = hdl;
+                      return i + 1
+                    })
+                })
+
+            p.then( function(j){ console.log("done: j = %j", j); done() }
+                  , function(err){ done(err) } )
+
+            d.resolve(lastIdx)
+          }
         })
 
     it("Should STILL have TWO segments", function(){
@@ -444,27 +535,52 @@ describe("BlockFile", function(){
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM/NUM_SPANNUM - 1)
 
-          var i = lastIdx
-          async.whilst(
-            /*test*/
-            function() { return i < nextIdx }
-            /*body*/
-          , function(loop){
-              blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-              blks[i].str = lorem64kStr
-              blks[i].siz = lorem64kSiz
+          if (USE_ASYNC) {
+            var i = lastIdx
+            async.whilst(
+              /*test*/
+              function() { return i < nextIdx }
+              /*body*/
+            , function(loop){
+                blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
+                blks[i].str = lorem64kStr
+                blks[i].siz = lorem64kSiz
 
-              var storep = bf.store(lorem64kBuf)
-              storep.then(
-                function(hdl){
-                  blks[i].hdl = hdl
-                  i += 1
-                  loop()
-                }
-              , function(err){ loop(err) })
-            }
-            /*results*/
-          , function(err){ done(err) })
+                var storep = bf.store(lorem64kBuf)
+                storep.then(
+                  function(hdl){
+                    blks[i].hdl = hdl
+                    i += 1
+                    loop()
+                  }
+                , function(err){ loop(err) })
+              }
+              /*results*/
+            , function(err){ done(err) })
+          }
+          else {
+            var d = Y.defer()
+              , p = d.promise
+
+            for (var j = lastIdx; j < nextIdx; j++)
+              p = p.then(
+                function(i){
+                  blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
+                  blks[i].str = lorem64kStr
+                  blks[i].siz = lorem64kSiz
+
+                  return bf.store(lorem64kBuf).then(
+                    function(hdl){
+                      blks[i].hdl = hdl
+                      return i + 1
+                    })
+                })
+
+            p.then( function(j){ console.log("done: j = %j", j); done() }
+                  , function(err){ done(err) } )
+
+            d.resolve(lastIdx)
+          }
         })
 
     it("Should STILL have THREE segments", function(){
@@ -539,35 +655,66 @@ describe("BlockFile", function(){
       , function(done){
           this.timeout(10*1000)
 
-          for (var j=0; j<blks.length; j+=1) {
-            assert(typeof blks[j] != 'undefined', format("blks[%d] is undefined", j))
+          //utils.err("lastIdx=%j; nextIdx=%j; blks.length=%j"
+          //         ,lastIdx , nextIdx, blks.length)
+
+          for (var k=0; k<blks.length; k+=1) {
+            assert(typeof blks[k] != 'undefined', format("blks[%d] is undefined", k))
           }
 
-          var i = 0
-          async.whilst(
-            /*test*/
-            function() { return i < blks.length }
-            /*body*/
-          , function(loop){
-              var loadp = bf.load(blks[i].hdl)
-              loadp.spread(
-                function(buf, hdl){
-                  var siz, str
+          if (USE_ASYNC) {
+            var i = 0
+            async.whilst(
+              /*test*/
+              function() { return i < blks.length }
+              /*body*/
+            , function(loop){
+                var loadp = bf.load(blks[i].hdl)
+                loadp.spread(
+                  function(buf, hdl){
+                    var siz, str
 
-                  siz = buf.readUInt32BE(0)
-                  expect(siz).to.equal(blks[i].siz)
+                    siz = buf.readUInt32BE(0)
+                    expect(siz).to.equal(blks[i].siz)
 
-                  str = buf.toString('utf8', 4, 4+siz)
-                  expect(str).to.equal(blks[i].str)
+                    str = buf.toString('utf8', 4, 4+siz)
+                    expect(str).to.equal(blks[i].str)
 
-                  i += 1
-                  loop()
-                }
-              , loop)
-            }
-            /*results*/
-          , function(err){ done(err) })
-        })
+                    i += 1
+                    loop()
+                  }
+                , loop)
+              }
+              /*results*/
+            , function(err){ done(err) })
+          }
+          else {
+            var d = Y.defer()
+              , p = d.promise
+
+            for (var j = 0; j < blks.length; j++)
+              p = p.then(
+                function(i){
+                  return bf.load(blks[i].hdl).spread(
+                    function(buf, hdl){
+                      var siz, str
+
+                      siz = buf.readUInt32BE(0)
+                      expect(siz).to.equal(blks[i].siz)
+
+                      str = buf.toString('utf8', 4, 4+siz)
+                      expect(str).to.equal(blks[i].str)
+
+                      return i + 1
+                    })
+                })
+
+            p.then( function(j){ console.log("done: j = %j", j); done() }
+                  , function(err){ done(err) } )
+
+            d.resolve(0)
+          }
+        }) //it
 
     it("bf.close()", function(done){
       //bf.close(done)
