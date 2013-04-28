@@ -137,14 +137,14 @@ var metaProps = { numHandleBits: 64
     })
 
     it("Write bf.props.numBlkNums lorem1k buffers", function(done){
-      this.timeout(16*1000)
+      this.timeout(20*1000)
       lastIdx = 0
       nextIdx = lastIdx + (bf.props.numBlkNums-1)
 
       //utils.err("numBlkNums-1 = %j", bf.props.numBlkNums-1)
 
       if (USE_ASYNC) {
-        //utils.err("USING ASYNC")
+        utils.err("USING ASYNC")
         var i = lastIdx
         async.whilst(
           /*test*/
@@ -215,14 +215,14 @@ var metaProps = { numHandleBits: 64
     })
 
     it("Write bf.props.numBlkNums/64 lorem1k buffers", function(done){
-      this.timeout(16*1000)
+      this.timeout(2*1000)
       lastIdx = nextIdx
       nextIdx += ceil(bf.props.numBlkNums/64) - 1
 
       //utils.err("ceil(numBlkNums/64-1 = %j)", ceil(bf.props.numBlkNums/64)-1)
 
       if (USE_ASYNC) {
-        //utils.err("USING ASYNC")
+        utils.err("USING ASYNC")
         var i = lastIdx
         async.whilst(
           /*test*/
@@ -329,7 +329,7 @@ var metaProps = { numHandleBits: 64
 
     it("Read all blks.length blks[i].hdl"
       , function(done){
-          this.timeout(7*1000)
+          this.timeout(10*1000)
 
           for (var j=0; j<blks.length; j+=1) {
             assert(typeof blks[j] != 'undefined', format("blks[%d] is undefined", j))
@@ -338,7 +338,7 @@ var metaProps = { numHandleBits: 64
           //utils.err("blks.length = %j", blks.length)
 
           if (USE_ASYNC) {
-            //utils.err("USING ASYNC")
+            utils.err("USING ASYNC")
             var i = 0
             async.whilst(
               /*test*/

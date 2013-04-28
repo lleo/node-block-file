@@ -530,7 +530,7 @@ describe("BlockFile", function(){
 
     it("write a 64k buffer to file 2046 (NUM_BLOCKNUM/NUM_SPANNUM - 1) times"
       , function(done){
-          this.timeout(5*1000)
+          this.timeout(2*1000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM/NUM_SPANNUM - 1)
@@ -653,7 +653,7 @@ describe("BlockFile", function(){
 
     it("Read all blks.length blks[i].hdl"
       , function(done){
-          this.timeout(10*1000)
+          this.timeout(15*1000)
 
           //utils.err("lastIdx=%j; nextIdx=%j; blks.length=%j"
           //         ,lastIdx , nextIdx, blks.length)
