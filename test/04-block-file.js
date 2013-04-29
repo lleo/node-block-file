@@ -16,8 +16,8 @@ var USE_ASYNC = /^(?:y|yes|t|true)$/i.test(process.env['USE_ASYNC'])
 
 var Props = require('../lib/props')
   , props = Props.defaultProps
-  , NUM_SPANNUM = props.numSpanNums
-  , NUM_BLOCKNUM = props.numBlkNums
+  , NUM_SPANNUM = props.numSpanNums()
+  , NUM_BLOCKNUM = props.numBlkNums()
 
 var filename ='test.bf'
   , fnStat
