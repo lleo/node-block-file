@@ -136,12 +136,12 @@ var metaProps = { numHandleBits: 64
       .then(function(bf_) { bf = bf_; done() }, done)
     })
 
-    it("Write bf.props.numBlkNums lorem1k buffers", function(done){
+    it("Write bf.props.numBlkNums() lorem1k buffers", function(done){
       this.timeout(20*1000)
       lastIdx = 0
-      nextIdx = lastIdx + (bf.props.numBlkNums-1)
+      nextIdx = lastIdx + (bf.props.numBlkNums()-1)
 
-      //utils.err("numBlkNums-1 = %j", bf.props.numBlkNums-1)
+      //utils.err("numBlkNums-1 = %j", bf.props.numBlkNums()-1)
 
       if (USE_ASYNC) {
         utils.err("USING ASYNC")
@@ -214,12 +214,12 @@ var metaProps = { numHandleBits: 64
       .then(function(bf_) { bf = bf_; done() }, done)
     })
 
-    it("Write bf.props.numBlkNums/64 lorem1k buffers", function(done){
+    it("Write bf.props.numBlkNums()/64 lorem1k buffers", function(done){
       this.timeout(2*1000)
       lastIdx = nextIdx
-      nextIdx += ceil(bf.props.numBlkNums/64) - 1
+      nextIdx += ceil(bf.props.numBlkNums()/64) - 1
 
-      //utils.err("ceil(numBlkNums/64-1 = %j)", ceil(bf.props.numBlkNums/64)-1)
+      //utils.err("ceil(numBlkNums/64-1 = %j)", ceil(bf.props.numBlkNums()/64)-1)
 
       if (USE_ASYNC) {
         utils.err("USING ASYNC")

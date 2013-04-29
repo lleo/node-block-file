@@ -14,7 +14,7 @@ describe("NaiveFSM", function(){
   var fsm, span, ofsm
     , i, fbm = []
 
-  for (i=0; i <= props.maxBlkNum; i+=1) fbm[i] = true
+  for (i=0; i <= props.maxBlkNum(); i+=1) fbm[i] = true
 
   describe("Constructor", function(){
     it("new NaiveFSM(fbm) should return a handle", function(){
@@ -28,16 +28,16 @@ describe("NaiveFSM", function(){
   describe("fsm.alloc then fsm.free", function(){
     var blkNum
 
-    describe("fsm.alloc props.minSpanNum", function(){
+    describe("fsm.alloc props.minSpanNum()", function(){
       it(".alloc()", function(){
-        blkNum = fsm.alloc(props.minSpanNum)
+        blkNum = fsm.alloc(props.minSpanNum())
         expect(blkNum).to.be.a('number')
       })
     })
 
-    describe("fsm.free props.minSpanNum", function(){
+    describe("fsm.free props.minSpanNum()", function(){
       it("fsm.free above allocated object", function(){
-        fsm.free(blkNum, props.minSpanNum)
+        fsm.free(blkNum, props.minSpanNum())
       })
       it("fsm is equal to original NaiveFSM object", function(){
         //fsm.equal(ofsm)
@@ -47,13 +47,13 @@ describe("NaiveFSM", function(){
 
   })
 
-  describe("fsm.alloc x3 props.minSpanNum, then fsm.free [0,1,2]", function(){
+  describe("fsm.alloc x3 props.minSpanNum(), then fsm.free [0,1,2]", function(){
     var blkNum = []
 
-    describe("fsm.alloc x3 props.minSpanNum", function(){
+    describe("fsm.alloc x3 props.minSpanNum()", function(){
       it(".alloc() blkNum[0..2]", function(){
         for (var i=0; i<3; i++) {
-          blkNum[i] = fsm.alloc(props.minSpanNum)
+          blkNum[i] = fsm.alloc(props.minSpanNum())
           expect(blkNum[i]).to.be.a('number')
         }
       })
@@ -61,11 +61,11 @@ describe("NaiveFSM", function(){
 
     describe("fsm.free [0,1,2]", function(){
       it("fsm.free blkNum[0]"
-        , function(){ fsm.free(blkNum[0], props.minSpanNum) })
+        , function(){ fsm.free(blkNum[0], props.minSpanNum()) })
       it("fsm.free blkNum[1]"
-        , function(){ fsm.free(blkNum[1], props.minSpanNum) })
+        , function(){ fsm.free(blkNum[1], props.minSpanNum()) })
       it("fsm.free blkNum[2]"
-        , function(){ fsm.free(blkNum[2], props.minSpanNum) })
+        , function(){ fsm.free(blkNum[2], props.minSpanNum()) })
       it("fsm is equal to original NaiveFSM object", function(){
         fsm.equal(ofsm)
       })
@@ -73,13 +73,13 @@ describe("NaiveFSM", function(){
 
   })
 
-  describe("fsm.alloc x3 props.minSpanNum, then fsm.free [0,2,1]", function(){
+  describe("fsm.alloc x3 props.minSpanNum(), then fsm.free [0,2,1]", function(){
     var blkNum = []
 
-    describe("fsm.alloc x3 props.minSpanNum", function(){
+    describe("fsm.alloc x3 props.minSpanNum()", function(){
       it(".alloc() blkNum[0..2]", function(){
         for (var i=0; i<3; i++) {
-          blkNum[i] = fsm.alloc(props.minSpanNum)
+          blkNum[i] = fsm.alloc(props.minSpanNum())
           expect(blkNum[i]).to.be.a('number')
         }
       })
@@ -105,7 +105,7 @@ describe("NaiveFSM", function(){
     describe("fsm.free [0,2,1]", function(){
       it("fsm.free span[0]", function(){
         //first span; only one span freed; one total
-        fsm.free(blkNum[0], props.minSpanNum)
+        fsm.free(blkNum[0], props.minSpanNum())
         //first free span is separated from any bigger one by other two
         expect(fsm.spans[0].length).to.equal(1)
         //three blocks were pulled off 15
@@ -114,7 +114,7 @@ describe("NaiveFSM", function(){
       })
       it("fsm.free blkNum[2]", function(){
         //third span; only one span freed; two total
-        fsm.free(blkNum[2], props.minSpanNum)
+        fsm.free(blkNum[2], props.minSpanNum())
         //first free span is separated from any bigger one by other two
         expect(fsm.spans[0].length).to.equal(1)
         //three blocks were pulled off 15
@@ -123,7 +123,7 @@ describe("NaiveFSM", function(){
       })
       it("fsm.free blkNum[1]", function(){
         //second span; should merge spans with first and thirteenth
-        fsm.free(blkNum[1], props.minSpanNum)
+        fsm.free(blkNum[1], props.minSpanNum())
         expect(fsm.spans[15].length).to.equal(2047)
       })
       it("fsm is equal to original NaiveFSM object", function(){
@@ -133,13 +133,13 @@ describe("NaiveFSM", function(){
 
   })
 
-  describe("fsm.alloc x3 props.maxSpanNum, then fsm.free [0,1,2]", function(){
+  describe("fsm.alloc x3 props.maxSpanNum(), then fsm.free [0,1,2]", function(){
     var blkNum = []
 
-    describe("fsm.alloc x3 props.maxSpanNum", function(){
+    describe("fsm.alloc x3 props.maxSpanNum()", function(){
       it(".alloc() blkNum[0..2]", function(){
         for (var i=0; i<3; i++) {
-          blkNum[i] = fsm.alloc(props.maxSpanNum)
+          blkNum[i] = fsm.alloc(props.maxSpanNum())
 
           expect(blkNum[i]).to.be.a('number')
         }
@@ -154,11 +154,11 @@ describe("NaiveFSM", function(){
 
     describe("fsm.free [0,1,2]", function(){
       it("fsm.free blkNum[0]"
-        , function(){ fsm.free(blkNum[0], props.maxSpanNum) })
+        , function(){ fsm.free(blkNum[0], props.maxSpanNum()) })
       it("fsm.free blkNum[1]"
-        , function(){ fsm.free(blkNum[1], props.maxSpanNum) })
+        , function(){ fsm.free(blkNum[1], props.maxSpanNum()) })
       it("fsm.free blkNum[2]"
-        , function(){ fsm.free(blkNum[2], props.maxSpanNum) })
+        , function(){ fsm.free(blkNum[2], props.maxSpanNum()) })
       it("fsm is equal to original NaiveFSM object", function(){
         fsm.equal(ofsm)
       })
@@ -166,13 +166,13 @@ describe("NaiveFSM", function(){
 
   })
 
-  describe("fsm.alloc x3 props.maxSpanNum, then fsm.free [0,2,1]", function(){
+  describe("fsm.alloc x3 props.maxSpanNum(), then fsm.free [0,2,1]", function(){
     var blkNum = []
 
-    describe("fsm.alloc x3 props.maxSpanNum", function(){
+    describe("fsm.alloc x3 props.maxSpanNum()", function(){
       it(".alloc() blkNum[0..2]", function(){
         for (var i=0; i<3; i++) {
-          blkNum[i] = fsm.alloc(props.maxSpanNum)
+          blkNum[i] = fsm.alloc(props.maxSpanNum())
 
           expect(blkNum[i]).to.be.a('number')
         }
@@ -181,11 +181,11 @@ describe("NaiveFSM", function(){
 
     describe("fsm.free [0,2,1]", function(){
       it("fsm.free blkNum[0]"
-        , function(){ fsm.free(blkNum[0], props.minSpanNum) })
+        , function(){ fsm.free(blkNum[0], props.minSpanNum()) })
       it("fsm.free blkNum[2]"
-        , function(){ fsm.free(blkNum[2], props.minSpanNum) })
+        , function(){ fsm.free(blkNum[2], props.minSpanNum()) })
       it("fsm.free blkNum[1]"
-        , function(){ fsm.free(blkNum[1], props.minSpanNum) })
+        , function(){ fsm.free(blkNum[1], props.minSpanNum()) })
       it("fsm is equal to original NaiveFSM object", function(){
         fsm.equal(ofsm)
       })
