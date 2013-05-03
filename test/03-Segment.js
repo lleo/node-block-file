@@ -18,7 +18,7 @@ var Handle = require('../lib/handle')
 
 describe("Segment", function(){
   var seg, oseg, segNum, hdl
-    , buf = new Buffer(props.blockSize())
+    , buf = new Buffer(props.fsmSize())
 
   buf.fill(0xff)
   signCRC16(buf)
