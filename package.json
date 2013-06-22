@@ -12,6 +12,26 @@
                   , "email": "lleoem@gmail.com"
                   , "url": "http://lleo-blog.blogspot.com/" }
 , "main"        : "lib/block_file.js"
+, "files"       : [ "package.json"
+                  , "README.md"
+                  , "lorem-ipsum.1k.txt"
+                  , "lorem-ipsum.4k.txt"
+                  , "lorem-ipsum.64k.txt"
+                  , "lib/package.json"
+		  , "lib/block_file.js"
+		  , "lib/fsm_naive.js"
+                  , "lib/handle.js"
+                  , "lib/props.js"
+                  , "lib/segment.js"
+                  , "lib/utils.js"
+                  , "lib/y-fs.js"
+                  , "test/00-basic.js"
+                  , "test/01-Handle.js"
+                  , "test/02-NaiveFSM.js"
+                  , "test/03-Segment.js"
+                  , "test/04-block-file.js"
+                  , "test/05-block-file-alt-props.js"
+                  ]
 , "license"     : "MIT"
 , "scripts"     : { "test" : "mocha -R spec -s 1" }
 , "dependencies": { "crc"     : ">=0.2.0"
@@ -21,6 +41,7 @@
 		  , "stats-api" : ">=1.1.0" }
 , "devDependencies": { "buffer-equal" : "*"
 		     , "mocha" : "*"
-		     , "chai"  : "*" }
+		     , "chai"  : "*"
+		     , "printf" : "*" }
 , "engines"     : { "node" : ">=0.4.0" }
 }
