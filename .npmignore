@@ -1,11 +1,5 @@
 .gitignore
 .npmignore
-open-bf.js
-stats.txt*
-stats-alt.txt*
-test.bf*
-test-alt.bf*
-NOTE
 *~
 .#*
 node_modules/
