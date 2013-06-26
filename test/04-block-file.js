@@ -21,11 +21,11 @@ var Props = require('../lib/props')
 
 var filename ='test.bf'
   , fnStat
-  , lorem4k_fn = 'lorem-ipsum.4k.txt'
+  , lorem4k_fn = 'test/lorem-ipsum.4k.txt'
   , lorem4kStr
   , lorem4kSiz
   , lorem4kBuf
-  , lorem64k_fn = 'lorem-ipsum.64k.txt'
+  , lorem64k_fn = 'test/lorem-ipsum.64k.txt'
   , lorem64kStr
   , lorem64kSiz
   , lorem64kBuf

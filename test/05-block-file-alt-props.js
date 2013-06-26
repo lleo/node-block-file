@@ -21,15 +21,15 @@ var USE_ASYNC = /^(?:y|yes|t|true)$/i.test(process.env['USE_ASYNC'])
 
 var filename ='test-alt.bf'
   , fnStat
-  , lorem1k_fn = 'lorem-ipsum.1k.txt'
+  , lorem1k_fn = 'test/lorem-ipsum.1k.txt'
   , lorem1kStr
   , lorem1kSiz
   , lorem1kBuf
-  , lorem4k_fn = 'lorem-ipsum.4k.txt'
+  , lorem4k_fn = 'test/lorem-ipsum.4k.txt'
   , lorem4kStr
   , lorem4kSiz
   , lorem4kBuf
-  , lorem64k_fn = 'lorem-ipsum.64k.txt'
+  , lorem64k_fn = 'test/lorem-ipsum.64k.txt'
   , lorem64kStr
   , lorem64kSiz
   , lorem64kBuf

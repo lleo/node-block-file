@@ -14,9 +14,6 @@
 , "main"        : "lib/block_file.js"
 , "files"       : [ "package.json"
                   , "README.md"
-                  , "lorem-ipsum.1k.txt"
-                  , "lorem-ipsum.4k.txt"
-                  , "lorem-ipsum.64k.txt"
                   , "lib/package.json"
 		  , "lib/block_file.js"
 		  , "lib/fsm_naive.js"
@@ -25,6 +22,9 @@
                   , "lib/segment.js"
                   , "lib/utils.js"
                   , "lib/y-fs.js"
+                  , "test/lorem-ipsum.1k.txt"
+                  , "test/lorem-ipsum.4k.txt"
+                  , "test/lorem-ipsum.64k.txt"
                   , "test/00-basic.js"
                   , "test/01-Handle.js"
                   , "test/02-NaiveFSM.js"
@@ -33,7 +33,7 @@
                   , "test/05-block-file-alt-props.js"
                   ]
 , "license"     : "MIT"
-, "scripts"     : { "test" : "mocha -R spec -s 1" }
+, "scripts"     : { "test" : "mocha -R spec -s 1 test/??-*.js" }
 , "dependencies": { "crc"     : ">=0.2.0"
 		  , "async"   : ">=0.2.6"
 		  , "ya-promise" : ">=1.0.0"
