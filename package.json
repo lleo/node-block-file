@@ -14,7 +14,6 @@
 , "main"        : "lib/block_file.js"
 , "files"       : [ "package.json"
                   , "README.md"
-                  , "lib/package.json"
 		  , "lib/block_file.js"
 		  , "lib/fsm_naive.js"
                   , "lib/handle.js"
