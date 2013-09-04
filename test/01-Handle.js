@@ -25,10 +25,10 @@ describe("Handle", function(){
                           , props.maxSpanNum() )
 //        , expected = props.maxSegNum()   << props.segNumShift()   |
 //                     props.maxBlkNum() << props.blkNumShift() |
-//                     props.maxSpanNum()  << props.spanNumShift //-131073
+//                     props.maxSpanNum()  << props.spanNumShift() //-131073
 //        , expected = 0xfffdffff     //4294836223 uint32
-        , expected = 0xfffdffff>>00  //-131073 int32
-//        , expected = 0xfffdffff>>>00 //-131073 uint32
+        , expected = 0xfffdffff>>0  //-131073 int32
+//        , expected = 0xfffdffff>>>0 //-131073 uint32
 
       expect(hdl.encode()).to.equal(expected)
     })
