@@ -79,28 +79,41 @@ sizes of the Free Space Maps, etcetra.
 #### numHandleBits
 default: `32`
 
+I haven't figured out how to get 64 to be encoded yet. Just stick with `32` ok.
+
 Number of bit a handle value is contained as: `32` or `64`. Only encoding
 into a 32bit value is supported with `32`. While `64` can not currently be
 encoded into a 64bit value, ALL other constraints relating to bit lengths are
 supported.
 
 #### blockSzBits
+default: `12`
+
+4k blocks are default. `pow(2,12) == 4096`
 
 #### fsmSzBits
+default: blockSzBits
+
+number of blocks per segment minus a checksum. Basically the free space map
+is a bit field `pow(fsmSzBits)` bytes long. However for safety we checksum the
+bit field. That checksum (either 16 or 32 bits consumes 2 or 4 bytes of the
+bit field. So the number of blocks in a segment is the same as the number of
+bits in the Free Space Map minus the checksum bits.
+
+If you make your blockSzBits smaller, feel free to keep the fsmSzBits large
+by explicitly setting the value.
 
 #### spanNumBits
-default: 2
+default: `4`
 
-Size of span in orders of 2:
-
-original block + pow(2, spanNum)-1 blocks
+original block + spanNumBits as an unsigned integer blocks
 
 * 0 => no span blocks (just the original block)
 * 1 => 1 or 2 blocks (aka original block + one more)
-* 2 => 1, 2, 4, 8, or 16 blocks
-* 3 => 1, 2, 4, 8, 16, 32, 64, 128, or 256 blocks
-* 4 => 1, 2, ..., or 65536 blocks
-* 5 (really do you need more ?!?)
+* 2 => 1, 2, 3, or 4 blocks
+* 3 => 1, 2, 3, 4, 5, 6, 7, or 8 blocks
+* 4 => 1, 2, 3, ..., or 16 blocks
+* 5 (are you getting the pattern yet?)
 
 
 #### checkSumBits
