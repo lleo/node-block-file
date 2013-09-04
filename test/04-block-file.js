@@ -11,8 +11,8 @@ var props = require('../lib/props').defaultProps
   , util = require('util')
   , inspect = util.inspect
   , format = util.format
-  , BLOCK_SIZE = props.blockSize
-  , NUM_BLOCKNUM = props.numBlkNums
+  , BLOCK_SIZE = props.blockSize()
+  , NUM_BLOCKNUM = props.numBlkNums()
 
 var filename ='test.bf'
   , err, fnStat
