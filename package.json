@@ -12,7 +12,7 @@
                   , "email": "lleoem@gmail.com"
                   , "url": "http://lleo-blog.blogspot.com/" }
 , "main"        : "lib/block_file.js"
-, "scripts"     : { "test" : "mocha -R spec -s 1" }
+, "scripts"     : { "test" : "mocha -R spec -s 1 test/??-*.js" }
 , "dependencies": { "crc"     : ">=0.2.0"
 		  , "async"   : ">=0.2.6"
 		  , "lodash"  : ">=1.0.1"
