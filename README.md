@@ -138,11 +138,15 @@ Really never used. Don't touch!
 # Basic Use
 
 ```javascript
-var BlockFile = require('block-file')
+var async = require('async')
+  , fs = require('fs')
+  , BlockFile = require('block-file')
   , hdls
+  , data_fn = "my-data.bf"
+  , hdls_fn = "my-data-hdls.json"
   , str = "lorem ipsum ..."
 
-BlockFile.open("my-data.bf", function(err, bf){
+BlockFile.open(data_fn, function(err, bf){
   if (err) throw err
   var strLen = Buffer.byteLength(str)
     , buf = new Buffer(strLen+2)
@@ -161,44 +165,54 @@ BlockFile.open("my-data.bf", function(err, bf){
         if (err) throw err
         var a = hdls.map(function(hdl){ return hdl.toString() })
         console.log(a)
-        fs.writeFileSync("handles.json", JSON.stringify(a))
+        fs.writeFileSync(hdls_fn, JSON.stringify(a))
       })
   })
 ```
 
 ```javascript
-var fs = require('fs')
-  , BlockFile = require('block-file')
-  , Handle = require('./lib/handle')
+var async = require('async')
+  , fs = require('fs')
+  , BlockFile = require('..')
+  , Handle = BlockFile.Handle
+  , data_fn = "my-data.bf"
+  , hdls_fn = "my-data-hdls.json"
   , hdls = []
 
-var data = JSON.parse( fs.readFileSync("handles.json") )
-
-data.forEach(function(hdlStr,i){
+var hdlStrs = JSON.parse( fs.readFileSync(hdls_fn) )
+hdlStrs.forEach(function(hdlStr,i){
   var hdl = Handle.fromString( hdlStr )
   hdls.push(hdl)
 })
 
-BlockFile.open("my-data.bf")
-.then(function(bf){
-  var promises = []
 
-  hdls.forEach(function(hdl,i){
-    promises[i] = bf.load(hdl)
-  })
+BlockFile.open(data_fn, function(err, bf){
+  if (err) throw err
 
-  return Y.all(promises)
-         .then(function(rets){
-           rets.forEach(function(ret, i){
-             var buf = ret[0]
-               , hdl = ret[1]
-               , len = buf.readUInt16BE(0)
-               , str = buf.toString('utf8', 2, len+2)
+  var data = []
+  async.eachSeries(
+    hdls
+  , function(hdl, next){
+      bf.load(hdl, function(err, buf, hdl_){
+        if (err) { next(err); return }
+        data.push([buf, hdl_])
+        next()
+      })
+    }
+  , function(err){
+      if (err) throw err
+      for (var i=0; i<data.length; i+=1) {
+        var buf = data[i][0]
+          , hdl = data[i][1]
+          , len = buf.readUInt16BE(0)
+          , str = buf.toString('utf8', 2, len+2)
 
-             console.log("content = %j", str)
-           })
-         })
+        console.log("\nhdl = %s", hdl)
+        console.log("content = %s", str)
+      }
+    }
+  )
+
 })
-.done()
 ```
 
