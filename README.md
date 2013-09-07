@@ -1,5 +1,9 @@
 # Block File Libary
 
+I offer my applogies to anyone actually using this library between 1.0.x
+and 1.1.x . I've come to the belief that I should not use the promise based
+API.
+
 # Purpose
 
 A library to allocate, free, read, and write fixed size blocks in a file.
