@@ -1,6 +1,6 @@
 {
   "name"        : "block-file"
-, "version"     : "1.0.3"
+, "version"     : "1.1.0"
 , "description" : "A library to read/write blocks from a file"
 , "keywords"    : ["block", "buffer", "storage"]
 , "homepage"    : "https://github/com/lleo/node-bptree"
@@ -20,7 +20,6 @@
                   , "lib/props.js"
                   , "lib/segment.js"
                   , "lib/utils.js"
-                  , "lib/y-fs.js"
                   , "test/lorem-ipsum.1k.txt"
                   , "test/lorem-ipsum.4k.txt"
                   , "test/lorem-ipsum.64k.txt"
@@ -35,7 +34,6 @@
 , "scripts"     : { "test" : "mocha -R spec -s 1 test/??-*.js" }
 , "dependencies": { "crc"     : ">=0.2.0"
 		  , "async"   : ">=0.2.6"
-		  , "ya-promise" : ">=1.0.0"
 		  , "lodash"  : ">=1.0.1"
 		  , "stats-api" : ">=1.1.0" }
 , "devDependencies": { "buffer-equal" : "*"

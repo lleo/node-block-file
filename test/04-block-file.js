@@ -1,26 +1,21 @@
 /* global describe it */
 
-var Handle = require('../lib/handle')
+var props = require('../lib/props').defaultProps
+  , Handle = require('../lib/handle')
   , BlockFile = require('../lib/block_file')
-  , utils = require('../lib/utils')
   , fs = require('fs')
+  , u = require('lodash')
   , async = require('async')
-  , Y = require('ya-promise')
   , assert = require('assert')
   , expect = require('chai').expect
   , util = require('util')
+  , inspect = util.inspect
   , format = util.format
-
-//Y.nextTick = process.nextTick
-var USE_ASYNC = /^(?:y|yes|t|true)$/i.test(process.env['USE_ASYNC'])
-
-var Props = require('../lib/props')
-  , props = Props.defaultProps
-  , NUM_SPANNUM = props.numSpanNums()
+  , BLOCK_SIZE = props.blockSize()
   , NUM_BLOCKNUM = props.numBlkNums()
 
 var filename ='test.bf'
-  , fnStat
+  , err, fnStat
   , lorem4k_fn = 'test/lorem-ipsum.4k.txt'
   , lorem4kStr
   , lorem4kSiz
@@ -29,6 +24,7 @@ var filename ='test.bf'
   , lorem64kStr
   , lorem64kSiz
   , lorem64kBuf
+  , sz
   , outputFN = "stats.txt"
 
 try {
@@ -43,17 +39,15 @@ if (fnStat) {
 
 lorem4kStr  = fs.readFileSync(lorem4k_fn, 'utf8')
 lorem4kSiz = Buffer.byteLength( lorem4kStr, 'utf8' )
-lorem4kBuf = new Buffer( 4 + lorem4kSiz )
-lorem4kBuf.writeUInt32BE( lorem4kSiz, 0 )
-lorem4kBuf.write( lorem4kStr, 4, lorem4kSiz, 'utf8' )
-assert.ok(lorem4kBuf.length < 4*1024) //lorem4kStr.length < 4*1024-4
+lorem4kBuf = new Buffer( 2 + lorem4kSiz )
+lorem4kBuf.writeUInt16BE( lorem4kSiz, 0 )
+lorem4kBuf.write( lorem4kStr, 2, lorem4kSiz, 'utf8' )
 
 lorem64kStr  = fs.readFileSync(lorem64k_fn, 'utf8')
 lorem64kSiz = Buffer.byteLength( lorem64kStr, 'utf8' )
-lorem64kBuf = new Buffer( 4 + lorem64kSiz )
-lorem64kBuf.writeUInt32BE( lorem64kSiz, 0 )
-lorem64kBuf.write( lorem64kStr, 4, lorem64kSiz, 'utf8' )
-assert.ok(lorem64kBuf.length < 64*1024) //lorem64kStr.length < 64*1024-4
+lorem64kBuf = new Buffer( 2 + lorem64kSiz )
+lorem64kBuf.writeUInt16BE( lorem64kSiz, 0 )
+lorem64kBuf.write( lorem64kStr, 2, lorem64kSiz, 'utf8' )
 
 
 describe("BlockFile", function(){
@@ -64,25 +58,22 @@ describe("BlockFile", function(){
     var bf
 
     it("should create a file "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){ bf = bf_; done() }, done )
-
-      //BlockFile.open(filename, function(err, bf_){
-      //  bf = bf_
-      //  if (err) {
-      //    done(err)
-      //    return
-      //  }
-      //  expect(bf).to.be.an.instanceof(BlockFile)
-      //  //expect(bf instanceof BlockFile).to.be.true
-      //  done()
-      //})
+      //BlockFile.create(filename, function(err, bf_){
+      BlockFile.open(filename, function(err, bf_){
+        bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        //expect(bf instanceof BlockFile).to.be.true
+        done()
+      })
     })
 
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -92,12 +83,16 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        //expect(bf instanceof BlockFile).to.be.true
         done()
-      }, done )
+      })
     })
 
 
@@ -111,14 +106,15 @@ describe("BlockFile", function(){
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      var storep = bf.store(lorem4kBuf)
-      storep.then(
-        function(hdl) {
-          //console.log("blks[%d].hdl = %s", i, hdl)
-          blks[i].hdl = hdl;
-          done()
+      bf.store(lorem4kBuf, function(err, hdl) {
+        if (err) {
+          done(err)
+          return
         }
-      , function(err){ done(err) })
+
+        blks[i].hdl = hdl;
+        done()
+      })
     })
 
     it("Should now have ONE segment", function(){
@@ -126,8 +122,7 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -137,37 +132,37 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      }, done )
+      })
     })
 
 
     it("Read the previous 4k buffer from file", function(done){
       var i = lastIdx
-        , loadp = bf.load(blks[i].hdl)
 
-      loadp.spread(
-        function(buf, hdl){
-          var siz, str
+      bf.load(blks[i].hdl, function(err, buf, hdl){
+        if (err) { done(err); return; }
+        var siz, str
 
-          siz = buf.readUInt32BE(0)
-          expect(siz).to.equal(blks[i].siz)
+        siz = buf.readUInt16BE(0)
+        expect(siz).to.equal(blks[i].siz)
 
-          str = buf.toString('utf8', 4, 4+siz)
-          expect(str).to.equal(blks[i].str)
+        str = buf.toString('utf8', 2, 2+siz)
+        expect(str).to.equal(blks[i].str)
 
-          done()
-        }
-      , function(err){ done(err) })
+        done()
+      })
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -177,78 +172,62 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        //expect(bf instanceof BlockFile).to.be.true
         done()
-      }, done )
+      })
     })
 
 
-    it("Write a 4k buffer to file 32751 (NUM_BLOCKNUM-1) times"
+    it("Write a 4k buffer to file 32751 (NUM_BLKNUM-1) times"
       , function(done){
-          this.timeout(10*1000)
+          this.timeout(5000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
 
-          if (USE_ASYNC) {
-            var i = lastIdx
-            async.whilst(
-              /*test*/
-              function() { return i < nextIdx }
-              /*body*/
-            , function(loop){
-                blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-                blks[i].str = lorem4kStr
-                blks[i].siz = lorem4kSiz
+          var i = lastIdx
 
-                bf.store(lorem4kBuf).then(
-                  function(hdl) {
-                    //console.log("blks[%d].hdl = %s", i, hdl)
-                    blks[i].hdl = hdl;
-                    i += 1
-                    loop()
-                  }
-                , function(err) { loop(err) })
-              }
-              /*results*/
-            , function(err){ done(err) } )
-          }
-          else {
-            var d = Y.defer()
-              , p = d.promise
+          async.whilst(
+            /*test*/
+            function() { return i < nextIdx }
+            /*body*/
+          , function(loop){
+              blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
+              blks[i].str = lorem4kStr
+              blks[i].siz = lorem4kSiz
 
-            for (var j = lastIdx; j < nextIdx; j++)
-              p = p.then(
-                function(i){
-                  blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-                  blks[i].str = lorem4kStr
-                  blks[i].siz = lorem4kSiz
+              bf.store(lorem4kBuf, function(err, hdl) {
+                if (err) {
+                  loop(err)
+                  return
+                }
 
-                  return bf.store(lorem4kBuf).then(
-                    function(hdl) {
-                      //console.log("blks[%d].hdl = %s", i, hdl)
-                      blks[i].hdl = hdl;
-                      return i + 1
-                    })
-                })
+                blks[i].hdl = hdl;
 
-            p.then( function(j){ console.log("done: j = %j", j); done() }
-                  , function(err){ done(err) } )
-
-            d.resolve(lastIdx)
-          }
-
+                i += 1
+                loop()
+             })
+            }
+            /*results*/
+          , function(err){
+              done(err)
+            }
+          )
         })
+
     it("Should STILL have only ONE segment", function(){
       expect(bf.segments.length).to.equal(1)
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -258,84 +237,54 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      }, done )
+      })
     })
 
 
     it("Read 32752 (NUM_BLOCKNUM) 4k blocks"
       , function(done){
-          this.timeout(10*1000)
+          this.timeout(10000)
 
-          var start = nextIdx - NUM_BLOCKNUM
+          var i = nextIdx - NUM_BLOCKNUM
             , end = i + NUM_BLOCKNUM
 
-          if (USE_ASYNC) {
-            var i = start
-            async.whilst(
-              /*test*/
-              function() { return i < end }
-              /*body*/
-            , function(loop){
-                var loadp = bf.load(blks[i].hdl)
+          async.whilst(
+            /*test*/
+            function() { return i < end }
+            /*body*/
+          , function(loop){
+              bf.load(blks[i].hdl, function(err, buf, hdl){
+                if (err) { done(err); return; }
+                var siz, str
 
-                loadp.spread(
-                  function(buf, hdl){
-                    var siz, str
+                siz = buf.readUInt16BE(0)
+                expect(siz).to.equal(blks[0].siz)
 
-                    siz = buf.readUInt32BE(0)
-                    expect(siz).to.equal(blks[0].siz)
+                str = buf.toString('utf8', 2, 2+siz)
 
-                    str = buf.toString('utf8', 4, 4+siz)
+                expect(str).to.equal(blks[i].str)
 
-                    expect(str).to.equal(blks[i].str)
-
-                    i += 1
-                    loop()
-                  }
-                , loop)
-              }
-              /*results*/
-            , function(err){ done(err) })
-          }
-          else {
-            var d = Y.defer()
-              , p = d.promise
-
-            for (var j = start; j < end; j++)
-              p = p.then(
-                function(i){
-                  var loadp = bf.load(blks[i].hdl)
-
-                  return loadp.spread(
-                    function(buf, hdl){
-                      var siz, str
-
-                      siz = buf.readUInt32BE(0)
-                      expect(siz).to.equal(blks[0].siz)
-
-                      str = buf.toString('utf8', 4, 4+siz)
-
-                      expect(str).to.equal(blks[i].str)
-
-                      return i + 1
-                    })
-                })
-
-            p.then( function(j){ console.log("done: j = %j", j); done() }
-                  , function(err){ done(err) } )
-
-            d.resolve(start)
-          }
-        }) //it
+                i += 1
+                loop()
+              })
+            }
+            /*results*/
+          , function(err){
+              done(err)
+            }
+          )
+        })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -345,12 +294,15 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      }, done )
+      })
     })
 
 
@@ -360,18 +312,20 @@ describe("BlockFile", function(){
       nextIdx = lastIdx + 1
 
       var i = lastIdx
-        , storep = bf.store(lorem4kBuf)
 
       blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      storep.then(
-        function(hdl) {
-          blks[i].hdl = hdl
-          done()
+      bf.store(lorem4kBuf, function(err, hdl) {
+        if (err) {
+          done(err)
+          return
         }
-      , function(err){ done(err) })
+
+        blks[i].hdl = hdl;
+        done()
+      })
     })
 
     it("Should now have TWO segments", function(){
@@ -379,8 +333,7 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -390,71 +343,56 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        //expect(bf instanceof BlockFile).to.be.true
         done()
-      }, done )
+      })
     })
 
 
     it("Write a 4k buffer to file 32751 (NUM_BLOCKNUM-1) times"
       , function(done){
-          this.timeout(10*1000)
+          this.timeout(5000)
 
           lastIdx = nextIdx
           nextIdx = lastIdx + (NUM_BLOCKNUM-1)
 
-          if (USE_ASYNC) {
-            var i = lastIdx
-            async.whilst(
-              /*test*/
-              function() { return i < nextIdx }
-              /*body*/
-            , function(loop){
-                //blks[i] = { str: lorem4kStr, siz: lorem4kSiz, hdl: undefined }
-                blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-                blks[i].str = lorem4kStr
-                blks[i].siz = lorem4kSiz
+          var i = lastIdx
 
-                var storep = bf.store(lorem4kBuf)
-
-                storep.then(
-                  function(hdl) {
-                    blks[i].hdl = hdl;
-                    i += 1
-                    loop()
-                  }
-                , function(err){ loop(err) })
+          async.whilst(
+            /*test*/
+            function() { return i < nextIdx }
+            /*body*/
+          , function(loop){
+              blks[i] = {
+                /* str: lorem, siz: num, hdl: Handle */
               }
-              /*results*/
-            , function(err){ done(err) })
-          }
-          else {
-            var d = Y.defer()
-              , p = d.promise
+              blks[i].str = lorem4kStr
+              blks[i].siz = lorem4kSiz
 
-            for (var j = lastIdx; j < nextIdx; j++)
-              p = p.then(
-                function(i){
-                  //blks[i] = {str: lorem4kStr, siz: lorem4kSiz, hdl: undefined}
-                  blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-                  blks[i].str = lorem4kStr
-                  blks[i].siz = lorem4kSiz
+              bf.store(lorem4kBuf, function(err, hdl) {
+                if (err) {
+                  loop(err)
+                  return
+                }
 
-                  return bf.store(lorem4kBuf).then(
-                    function(hdl) {
-                      blks[i].hdl = hdl;
-                      return i + 1
-                    })
-                })
+                blks[i].hdl = hdl;
 
-            p.then( function(j){ console.log("done: j = %j", j); done() }
-                  , function(err){ done(err) } )
-
-            d.resolve(lastIdx)
-          }
+                i += 1
+                loop()
+             })
+            }
+            /*results*/
+          , function(err){
+              done(err)
+            }
+          )
         })
 
     it("Should STILL have TWO segments", function(){
@@ -462,8 +400,7 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -473,12 +410,16 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        //expect(bf instanceof BlockFile).to.be.true
         done()
-      }, done )
+      })
     })
 
 
@@ -493,14 +434,15 @@ describe("BlockFile", function(){
       blks[i].str = lorem64kStr
       blks[i].siz = lorem64kSiz
 
-      var storep = bf.store(lorem64kBuf)
-
-      storep.then(
-        function(hdl) {
-          blks[i].hdl = hdl;
-          done()
+      bf.store(lorem64kBuf, function(err, hdl) {
+        if (err) {
+          done(err)
+          return
         }
-      , function(err){ done(err) })
+
+        blks[i].hdl = hdl;
+        done()
+      })
     })
 
     it("Should now have THREE segments", function(){
@@ -508,8 +450,7 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -519,68 +460,56 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        //expect(bf instanceof BlockFile).to.be.true
         done()
-      }, done )
+      })
     })
 
 
-    it("write a 64k buffer to file 2046 (NUM_BLOCKNUM/NUM_SPANNUM - 1) times"
+    it("write a 64k buffer to file 2046 (NUM_BLOCKNUM/(MAX_SPANNUM+1)-1) times"
       , function(done){
-          this.timeout(2*1000)
+          this.timeout(5000)
 
           lastIdx = nextIdx
-          nextIdx = lastIdx + (NUM_BLOCKNUM/NUM_SPANNUM - 1)
+          nextIdx = lastIdx + (NUM_BLOCKNUM/16 - 1)
 
-          if (USE_ASYNC) {
-            var i = lastIdx
-            async.whilst(
-              /*test*/
-              function() { return i < nextIdx }
-              /*body*/
-            , function(loop){
-                blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-                blks[i].str = lorem64kStr
-                blks[i].siz = lorem64kSiz
+          var i = lastIdx
 
-                var storep = bf.store(lorem64kBuf)
-                storep.then(
-                  function(hdl){
-                    blks[i].hdl = hdl
-                    i += 1
-                    loop()
-                  }
-                , function(err){ loop(err) })
+          async.whilst(
+            /*test*/
+            function() { return i < nextIdx }
+            /*body*/
+          , function(loop){
+              blks[i] = {
+                /* str: lorem, siz: num, hdl: Handle */
               }
-              /*results*/
-            , function(err){ done(err) })
-          }
-          else {
-            var d = Y.defer()
-              , p = d.promise
+              blks[i].str = lorem64kStr
+              blks[i].siz = lorem64kSiz
 
-            for (var j = lastIdx; j < nextIdx; j++)
-              p = p.then(
-                function(i){
-                  blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
-                  blks[i].str = lorem64kStr
-                  blks[i].siz = lorem64kSiz
+              bf.store(lorem64kBuf, function(err, hdl) {
+                if (err) {
+                  loop(err)
+                  return
+                }
 
-                  return bf.store(lorem64kBuf).then(
-                    function(hdl){
-                      blks[i].hdl = hdl
-                      return i + 1
-                    })
-                })
+                blks[i].hdl = hdl;
 
-            p.then( function(j){ console.log("done: j = %j", j); done() }
-                  , function(err){ done(err) } )
-
-            d.resolve(lastIdx)
-          }
+                i += 1
+                loop()
+             })
+            }
+            /*results*/
+          , function(err){
+              done(err)
+            }
+          )
         })
 
     it("Should STILL have THREE segments", function(){
@@ -588,8 +517,7 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -598,12 +526,16 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        //expect(bf instanceof BlockFile).to.be.true
         done()
-      }, done )
+      })
     })
 
 
@@ -617,13 +549,15 @@ describe("BlockFile", function(){
       blks[i].str = lorem4kStr
       blks[i].siz = lorem4kSiz
 
-      var storep = bf.store(lorem4kBuf)
-      storep.then(
-        function(hdl) {
-          blks[i].hdl = hdl;
-          done()
+      bf.store(lorem4kBuf, function(err, hdl) {
+        if (err) {
+          done(err)
+          return
         }
-      , function(err){ done(err) })
+
+        blks[i].hdl = hdl;
+        done()
+      })
     })
 
     it("should now have FOUR segments", function(){
@@ -631,8 +565,7 @@ describe("BlockFile", function(){
     })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -642,83 +575,56 @@ describe("BlockFile", function(){
     var bf
 
     it("should open "+filename, function(done){
-      BlockFile.open(filename)
-      .then(function(bf_){
-        expect(bf_).to.be.an.instanceof(BlockFile)
+      BlockFile.open(filename, function(err, bf_){
         bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
         done()
-      }, done )
+      })
     })
 
 
     it("Read all blks.length blks[i].hdl"
       , function(done){
-          this.timeout(15*1000)
+          this.timeout(10000)
 
-          //utils.err("lastIdx=%j; nextIdx=%j; blks.length=%j"
-          //         ,lastIdx , nextIdx, blks.length)
-
-          for (var k=0; k<blks.length; k+=1) {
-            assert(typeof blks[k] != 'undefined', format("blks[%d] is undefined", k))
+          for (var j=0; j<blks.length; j+=1) {
+            assert(!u.isUndefined(blks[j]), format("blks[%d] is undefined", j))
           }
 
-          if (USE_ASYNC) {
-            var i = 0
-            async.whilst(
-              /*test*/
-              function() { return i < blks.length }
-              /*body*/
-            , function(loop){
-                var loadp = bf.load(blks[i].hdl)
-                loadp.spread(
-                  function(buf, hdl){
-                    var siz, str
+          var i = 0
 
-                    siz = buf.readUInt32BE(0)
-                    expect(siz).to.equal(blks[i].siz)
+          async.whilst(
+            /*test*/
+            function() { return i < blks.length }
+            /*body*/
+          , function(loop){
+              bf.load(blks[i].hdl, function(err, buf, hdl){
+                if (err) { done(err); return; }
+                var siz, str
 
-                    str = buf.toString('utf8', 4, 4+siz)
-                    expect(str).to.equal(blks[i].str)
+                siz = buf.readUInt16BE(0)
+                expect(siz).to.equal(blks[i].siz)
 
-                    i += 1
-                    loop()
-                  }
-                , loop)
-              }
-              /*results*/
-            , function(err){ done(err) })
-          }
-          else {
-            var d = Y.defer()
-              , p = d.promise
+                str = buf.toString('utf8', 2, 2+siz)
+                expect(str).to.equal(blks[i].str)
 
-            for (var j = 0; j < blks.length; j++)
-              p = p.then(
-                function(i){
-                  return bf.load(blks[i].hdl).spread(
-                    function(buf, hdl){
-                      var siz, str
-
-                      siz = buf.readUInt32BE(0)
-                      expect(siz).to.equal(blks[i].siz)
-
-                      str = buf.toString('utf8', 4, 4+siz)
-                      expect(str).to.equal(blks[i].str)
-
-                      return i + 1
-                    })
-                })
-
-            p.then( function(j){ console.log("done: j = %j", j); done() }
-                  , function(err){ done(err) } )
-
-            d.resolve(0)
-          }
-        }) //it
+                i += 1
+                loop()
+              })
+            }
+            /*results*/
+          , function(err){
+              done(err)
+            }
+          )
+        })
 
     it("bf.close()", function(done){
-      //bf.close(done)
-      bf.close().then(done, done)
+      bf.close(done)
     })
 
   })
@@ -726,8 +632,14 @@ describe("BlockFile", function(){
   describe("Write the stats aut to "+outputFN, function(){
     it("should dump BlockFile.STATS", function(done){
       fs.writeFile(outputFN, BlockFile.STATS.toString({values:"both"})+"\n"
-                  , function(err){ done(err) })
+                  , function(){
+                      if (err) { done(err); return }
+                      done()
+                    })
     })
   })
 
+  //describe("BlockFile.open()", function(){
+  //  it("", function(){})
+  //})
 })

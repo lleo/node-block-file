@@ -1,5 +1,27 @@
 # Block File Libary
 
+## Apology for API changes
+
+I offer my applogies to anyone actually using this library between 1.0.x
+and 1.1.x . I've come to the belief that I should not use the promise based
+API. I asthetically like promises, but promises come with the problem of
+`process.nextTick` versus `setImmediate`. I even considered a hybrid approach
+with a queue of tasks executing a fixed number of tasks each `process.nextTick`.
+But that is for another day (and debugging head aches). So `block-file` with
+promises via `setImmediate` turns out to be much slower that of `block-file`
+with async (just running `time npm test` is 33 seconds with promises and 23
+seconds with async). Additionally the async API can be easily converted to
+a promise API via `Y.promisify` aka `Y.nfbind` or `Y.denodify` (or simmilar
+functions in other promise libraries).
+
+## Future?
+
+I have plans for a 2.0 version which will make this library more
+"transaction-capable". What that means I haven't quite figured out. But
+the idea is to write a log of changes to a BlockFile/Segments and only
+commit them when directed to. Any failed commit (via crash) can be re-tried
+to regain a vaild state.
+
 # Purpose
 
 A library to allocate, free, read, and write fixed size blocks in a file.
@@ -16,55 +38,63 @@ Promise/A+ library).
 
 # BlockFile
 
-### `promise = Blockfile.open(filename, [props])`
+### Blockfile.open(filename, [props], cb)`
+
+Where `cb` has the signature `cb(err, bf)`. and `bf` is the block-file obect.
 
 ```javascript
-BlockFile.open(filename)
-.then(function(bf){
+BlockFile.open(filename, function(err, bf){
   ...
 })
 ```
 
-### `promise = bf.close()`
+### `bf.close(cb)`
+
+Where `cb` has the signature `cb(err)`.
 
 ```javascript
-BlockFile.open(filename)
-.then(function(bf){
-   return bf.close()
-})
-.then(function(){
-   console.log("%s closed", filename)
+BlockFile.open(filename, function(err, bf){
+  if (err) throw err
+  return bf.close(function(err){
+    if (err) throw err
+    console.log("%s closed", filename)
+  })
 })
 ```
 
-### `promise = bf.store(buffer, [handle])`
+### `bf.store(buffer, [handle], cb)`
+
+Where `cb` has the signature `cb(err, handle)`. If node `handle` is provided
+as an argument to `bf.store()` then a new `handle` is allocated. The callback
+contains to `handle` of where the `buffer` was stored.
 
 ```javascript
-bf.store(buffer)
-.then(function(handle){
+bf.store(buffer, function(err, handle){
   ...
 })
 ```
 
 ```javascript
-bf.store(buffer, handle)
-.then(function(handle){
+bf.store(buffer, handle, function(err, handle){
   ...
 })
 ```
 
-### `promise = bf.load(handle)
+### `bf.load(handle, cb)`
 
 ```javascript
-bf.load(handle)
-.spread(function(buffer, handle){
+bf.load(handle, function(err, buffer, handle){
   ...
 })
 ```
 
-### `handle = bf.reserve(numBlocks)`
+### `handle = bf.reserve(numBlocks, cb)`
 
-### `boolean = bf.release(handle)`
+Where `cb` has the signature `cb(err)`.
+
+### `boolean = bf.release(handle, cb)`
+
+Where `cb` has the signature `cb(err)`.
 
 `boolean` reflects whether the handle was reserved already or not.
 
@@ -85,6 +115,8 @@ Number of bit a handle value is contained as: `32` or `64`. Only encoding
 into a 32bit value is supported with `32`. While `64` can not currently be
 encoded into a 64bit value, ALL other constraints relating to bit lengths are
 supported.
+
+I am thinking of not having a 64bit handle option. :) solved that problem...
 
 #### blockSzBits
 default: `12`
@@ -113,8 +145,7 @@ original block + spanNumBits as an unsigned integer blocks
 * 2 => 1, 2, 3, or 4 blocks
 * 3 => 1, 2, 3, 4, 5, 6, 7, or 8 blocks
 * 4 => 1, 2, 3, ..., or 16 blocks
-* 5 (are you getting the pattern yet?)
-
+* 5 => 1, 2, 3, ..., or 32 blocks (you get the picture)
 
 #### checkSumBits
 default: `16`
@@ -129,70 +160,81 @@ Really never used. Don't touch!
 # Basic Use
 
 ```javascript
-var Y = require('ya-promise')
+var async = require('async')
+  , fs = require('fs')
   , BlockFile = require('block-file')
   , hdls
+  , data_fn = "my-data.bf"
+  , hdls_fn = "my-data-hdls.json"
   , str = "lorem ipsum ..."
 
-BlockFile.open("my-data.bf")
-.then(
-  function(bf){
-    var strLen = Buffer.byteLength(str)
-      , buf = new Buffer(strLen+2)
-      , promises = []
+BlockFile.open(data_fn, function(err, bf){
+  if (err) throw err
+  var strLen = Buffer.byteLength(str)
+    , buf = new Buffer(strLen+2)
+    , promises = []
 
-    buf.writeUInt16BE(strLen, 0)
-    buf.write(str, 2, strLen)
-    
-    promises[0] = bf.store(buf)
-    promises[1] = bf.store(buf)
-    
-    return Y.all(promises)
-           .then(function(v){ hdls = v })
-           .then(function(){ return bf.close() })
-})
-.then(
-  function(){
-    var a = hdls.map(function(v){ return v.toString() })
-    console.log(a)
-    fs.writeFileSync("handles.json", JSON.stringify(a))
-})
-.done()
+  buf.writeUInt16BE(strLen, 0)
+  buf.write(str, 2, strLen)
+
+  async.eachSeries(
+    [ buf, buf ]
+  , function(b, next){ bf.store(b, next) }
+  , function(err, res){
+      if (err) throw err
+      hdls = res
+      bf.close(function(err){
+        if (err) throw err
+        var a = hdls.map(function(hdl){ return hdl.toString() })
+        console.log(a)
+        fs.writeFileSync(hdls_fn, JSON.stringify(a))
+      })
+  })
 ```
 
 ```javascript
-var fs = require('fs')
-  , BlockFile = require('block-file')
-  , Handle = require('./lib/handle')
+var async = require('async')
+  , fs = require('fs')
+  , BlockFile = require('..')
+  , Handle = BlockFile.Handle
+  , data_fn = "my-data.bf"
+  , hdls_fn = "my-data-hdls.json"
   , hdls = []
 
-var data = JSON.parse( fs.readFileSync("handles.json") )
-
-data.forEach(function(hdlStr,i){
+var hdlStrs = JSON.parse( fs.readFileSync(hdls_fn) )
+hdlStrs.forEach(function(hdlStr,i){
   var hdl = Handle.fromString( hdlStr )
   hdls.push(hdl)
 })
 
-BlockFile.open("my-data.bf")
-.then(function(bf){
-  var promises = []
 
-  hdls.forEach(function(hdl,i){
-    promises[i] = bf.load(hdl)
-  })
+BlockFile.open(data_fn, function(err, bf){
+  if (err) throw err
 
-  return Y.all(promises)
-         .then(function(rets){
-           rets.forEach(function(ret, i){
-             var buf = ret[0]
-               , hdl = ret[1]
-               , len = buf.readUInt16BE(0)
-               , str = buf.toString('utf8', 2, len+2)
+  var data = []
+  async.eachSeries(
+    hdls
+  , function(hdl, next){
+      bf.load(hdl, function(err, buf, hdl_){
+        if (err) { next(err); return }
+        data.push([buf, hdl_])
+        next()
+      })
+    }
+  , function(err){
+      if (err) throw err
+      for (var i=0; i<data.length; i+=1) {
+        var buf = data[i][0]
+          , hdl = data[i][1]
+          , len = buf.readUInt16BE(0)
+          , str = buf.toString('utf8', 2, len+2)
 
-             console.log("content = %j", str)
-           })
-         })
+        console.log("\nhdl = %s", hdl)
+        console.log("content = %s", str)
+      }
+    }
+  )
+
 })
-.done()
 ```
 
