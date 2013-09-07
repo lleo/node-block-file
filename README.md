@@ -1,8 +1,26 @@
 # Block File Libary
 
+## Apology for API changes
+
 I offer my applogies to anyone actually using this library between 1.0.x
 and 1.1.x . I've come to the belief that I should not use the promise based
-API.
+API. I asthetically like promises, but promises come with the problem of
+`process.nextTick` versus `setImmediate`. I even considered a hybrid approach
+with a queue of tasks executing a fixed number of tasks each `process.nextTick`.
+But that is for another day (and debugging head aches). So `block-file` with
+promises via `setImmediate` turns out to be much slower that of `block-file`
+with async (just running `time npm test` is 33 seconds with promises and 23
+seconds with async). Additionally the async API can be easily converted to
+a promise API via `Y.promisify` aka `Y.nfbind` or `Y.denodify` (or simmilar
+functions in other promise libraries).
+
+## Future?
+
+I have plans for a 2.0 version which will make this library more
+"transaction-capable". What that means I haven't quite figured out. But
+the idea is to write a log of changes to a BlockFile/Segments and only
+commit them when directed to. Any failed commit (via crash) can be re-tried
+to regain a vaild state.
 
 # Purpose
 
