@@ -6,7 +6,6 @@ var Handle = require('../lib/handle')
   , utils = require('../lib/utils')
   , fs = require('fs')
   , async = require('async')
-  , Y = require('ya-promise')
   , assert = require('assert')
   , expect = require('chai').expect
   , util = require('util')
@@ -15,6 +14,7 @@ var Handle = require('../lib/handle')
   , u = require('lodash')
   , ceil = Math.ceil
   , floor = Math.floor
+
 var filename ='test-alt.bf'
   , fnStat
   , lorem1k_fn = 'test/lorem-ipsum.1k.txt'
