@@ -13,6 +13,7 @@ var props = require('../lib/props').defaultProps
   , format = util.format
   , BLOCK_SIZE = props.blockSize()
   , NUM_BLOCKNUM = props.numBlkNums()
+  , utils = require('../lib/utils')
 
 var filename ='test.bf'
   , err, fnStat
@@ -100,7 +101,7 @@ describe("BlockFile", function(){
       lastIdx = 0
       nextIdx = lastIdx + 1
 
-      var i = lastIdx
+      var i = lastIdx // i == 0
 
       blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
       blks[i].str = lorem4kStr
@@ -145,7 +146,7 @@ describe("BlockFile", function(){
 
 
     it("Read the previous 4k buffer from file", function(done){
-      var i = lastIdx
+      var i = lastIdx //still i == 0
 
       bf.load(blks[i].hdl, function(err, buf, hdl){
         if (err) { done(err); return; }
@@ -189,8 +190,8 @@ describe("BlockFile", function(){
       , function(done){
           this.timeout(5000)
 
-          lastIdx = nextIdx
-          nextIdx = lastIdx + (NUM_BLOCKNUM-1)
+          lastIdx = nextIdx //== 1
+          nextIdx = lastIdx + NUM_BLOCKNUM //== NUM_BLOCKNUM+1
 
           var i = lastIdx
 
@@ -253,12 +254,12 @@ describe("BlockFile", function(){
       , function(done){
           this.timeout(10000)
 
-          var i = nextIdx - NUM_BLOCKNUM
-            , end = i + NUM_BLOCKNUM
+          var i = nextIdx - NUM_BLOCKNUM - 1 // i == 0
+            , last = i + NUM_BLOCKNUM //NUM_BLOCKNUM
 
           async.whilst(
             /*test*/
-            function() { return i < end }
+            function() { return i < last+1 }
             /*body*/
           , function(loop){
               bf.load(blks[i].hdl, function(err, buf, hdl){
@@ -308,10 +309,10 @@ describe("BlockFile", function(){
 
     it("Write a 4k buffer to file", function(done){
 
-      lastIdx = nextIdx
+      lastIdx = nextIdx  //NUM_BLOCKNUM+1
       nextIdx = lastIdx + 1
 
-      var i = lastIdx
+      var i = lastIdx  //NUM_BLOCKNUM+1
 
       blks[i] = {/*str: lorem, siz: num, hdl: Handle*/}
       blks[i].str = lorem4kStr
@@ -360,8 +361,8 @@ describe("BlockFile", function(){
       , function(done){
           this.timeout(5000)
 
-          lastIdx = nextIdx
-          nextIdx = lastIdx + (NUM_BLOCKNUM-1)
+          lastIdx = nextIdx //NUM_BLOCKNUM+1
+          nextIdx = lastIdx + NUM_BLOCKNUM //NUM_BLOCKNUM + 1 + NUM_BLOCKNUM
 
           var i = lastIdx
 
