@@ -14,24 +14,18 @@ var Handle = require('../lib/handle')
   , u = require('lodash')
   , ceil = Math.ceil
   , floor = Math.floor
+  , strOps = require('../lib/str_ops')
 
 var filename ='test-alt.bf'
   , fnStat
-  , lorem1k_fn = 'test/lorem-ipsum.1k.txt'
+  , lorem256_fn = 'test/lorem-ipsum.254.txt'
+  , lorem256Str
   , lorem1kStr
   , lorem1kSiz
   , lorem1kBuf
-  , lorem4k_fn = 'test/lorem-ipsum.4k.txt'
-  , lorem4kStr
-  , lorem4kSiz
-  , lorem4kBuf
-  , lorem64k_fn = 'test/lorem-ipsum.64k.txt'
   , lorem64kStr
   , lorem64kSiz
   , lorem64kBuf
-  , lorem256kStr
-  , lorem256kSiz
-  , lorem256kBuf
   , outputFN = "stats-alt.txt"
 
 try {
@@ -44,7 +38,10 @@ if (fnStat) {
   fs.unlinkSync(filename)
 }
 
-lorem1kStr  = fs.readFileSync(lorem1k_fn, 'utf8')
+lorem256Str = fs.readFileSync(lorem256_fn, 'utf8')
+assert.equal(lorem256Str.length, 254) //we need 2 spare bytes for string size
+
+lorem1kStr = strOps.repeat(lorem256Str, 4)
 lorem1kSiz = Buffer.byteLength( lorem1kStr, 'utf8' )
 lorem1kBuf = new Buffer( 4 + lorem1kSiz )
 lorem1kBuf.writeUInt32BE( lorem1kSiz, 0 )
@@ -52,30 +49,13 @@ lorem1kBuf.write( lorem1kStr, 4, lorem1kSiz, 'utf8' )
 assert.ok(lorem1kBuf.length <= 1024)
 assert.ok(lorem1kBuf.length > 768)
 
-lorem4kStr  = fs.readFileSync(lorem4k_fn, 'utf8')
-lorem4kSiz = Buffer.byteLength( lorem4kStr, 'utf8' )
-lorem4kBuf = new Buffer( 4 + lorem4kSiz )
-lorem4kBuf.writeUInt32BE( lorem4kSiz, 0 )
-lorem4kBuf.write( lorem4kStr, 4, lorem4kSiz, 'utf8' )
-assert.ok(lorem4kBuf.length <= 4*1024) //lorem4kStr.length < 4*1024-4
-assert.ok(lorem4kBuf.length > 3*1024)
-
-lorem64kStr  = fs.readFileSync(lorem64k_fn, 'utf8')
+lorem64kStr  = strOps.mult(lorem1kStr, 64)
 lorem64kSiz = Buffer.byteLength( lorem64kStr, 'utf8' )
 lorem64kBuf = new Buffer( 4 + lorem64kSiz )
 lorem64kBuf.writeUInt32BE( lorem64kSiz, 0 )
 lorem64kBuf.write( lorem64kStr, 4, lorem64kSiz, 'utf8' )
 assert.ok(lorem64kBuf.length <= 64*1024) //lorem64kStr.length < 64*1024-4
 assert.ok(lorem64kBuf.length > 63*1024)
-
-lorem256kStr = utils.repeatStr(lorem64kStr+"\n", 4)
-lorem256kSiz = Buffer.byteLength( lorem256kStr, 'utf8' )
-lorem256kBuf = new Buffer( 4 + lorem256kSiz )
-lorem256kBuf.writeUInt32BE( lorem256kSiz, 0 )
-lorem256kBuf.write( lorem256kStr, 4, lorem256kSiz, 'utf8' )
-assert.ok(lorem256kBuf.length <= 256*1024) //lorem256kStr.length < 256*1024-4
-assert.ok(lorem256kBuf.length > 255*1024) //lorem256kStr.length < 256*1024-4
-
 
 describe("BlockFile w/alternative metaProps", function(){
 var metaProps = { numHandleBits: 64
@@ -100,7 +80,6 @@ var metaProps = { numHandleBits: 64
       //utils.err("\nsegNumBits  = %j", props.segNumBits)
       //utils.err("blkNumBits  = %j", props.blkNumBits)
       //utils.err("spanNumBits = %j", props.spanNumBits)
-      //utils.err("lorem256kSiz = %j", lorem256kSiz)
 
       done()
     })

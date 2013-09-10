@@ -14,14 +14,16 @@ var props = require('../lib/props').defaultProps
   , BLOCK_SIZE = props.blockSize()
   , NUM_BLOCKNUM = props.numBlkNums()
   , utils = require('../lib/utils')
+  , strOps = require('../lib/str_ops')
 
 var filename ='test.bf'
   , err, fnStat
-  , lorem4k_fn = 'test/lorem-ipsum.4k.txt'
+  , lorem256_fn = 'test/lorem-ipsum.254.txt'
+  , lorem256Str
+//  , lorem1kStr
   , lorem4kStr
   , lorem4kSiz
   , lorem4kBuf
-  , lorem64k_fn = 'test/lorem-ipsum.64k.txt'
   , lorem64kStr
   , lorem64kSiz
   , lorem64kBuf
@@ -38,13 +40,19 @@ if (fnStat) {
   fs.unlinkSync(filename)
 }
 
-lorem4kStr  = fs.readFileSync(lorem4k_fn, 'utf8')
+lorem256Str = fs.readFileSync(lorem256_fn, 'utf8')
+assert.equal(lorem256Str.length, 254) //we need 2 spare bytes for string size
+//lorem1kStr = strOps.repeat(lorem256Str, 4)
+
+lorem4kStr = strOps.mult(lorem256Str, 4*4)
+assert.equal(lorem4kStr.length, 254*4*4)
 lorem4kSiz = Buffer.byteLength( lorem4kStr, 'utf8' )
 lorem4kBuf = new Buffer( 2 + lorem4kSiz )
 lorem4kBuf.writeUInt16BE( lorem4kSiz, 0 )
 lorem4kBuf.write( lorem4kStr, 2, lorem4kSiz, 'utf8' )
 
-lorem64kStr  = fs.readFileSync(lorem64k_fn, 'utf8')
+lorem64kStr = strOps.mult(lorem256Str, 4*64)
+assert.equal(lorem64kStr.length, 254*4*64)
 lorem64kSiz = Buffer.byteLength( lorem64kStr, 'utf8' )
 lorem64kBuf = new Buffer( 2 + lorem64kSiz )
 lorem64kBuf.writeUInt16BE( lorem64kSiz, 0 )
@@ -630,7 +638,7 @@ describe("BlockFile", function(){
 
   })
 
-  describe("Write the stats aut to "+outputFN, function(){
+  describe("Write the stats out to "+outputFN, function(){
     it("should dump BlockFile.STATS", function(done){
       fs.writeFile(outputFN, BlockFile.STATS.toString({values:"both"})+"\n"
                   , function(){
