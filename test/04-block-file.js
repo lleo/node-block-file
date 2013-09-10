@@ -20,7 +20,6 @@ var filename ='test.bf'
   , err, fnStat
   , lorem256_fn = 'test/lorem-ipsum.254.txt'
   , lorem256Str
-//  , lorem1kStr
   , lorem4kStr
   , lorem4kSiz
   , lorem4kBuf
@@ -42,7 +41,6 @@ if (fnStat) {
 
 lorem256Str = fs.readFileSync(lorem256_fn, 'utf8')
 assert.equal(lorem256Str.length, 254) //we need 2 spare bytes for string size
-//lorem1kStr = strOps.repeat(lorem256Str, 4)
 
 lorem4kStr = strOps.mult(lorem256Str, 4*4)
 assert.equal(lorem4kStr.length, 254*4*4)
