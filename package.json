@@ -1,6 +1,6 @@
 {
   "name"        : "block-file"
-, "version"     : "1.1.0"
+, "version"     : "1.1.1"
 , "description" : "A library to read/write blocks from a file"
 , "keywords"    : ["block", "buffer", "storage"]
 , "homepage"    : "https://github/com/lleo/node-bptree"
