@@ -36,7 +36,6 @@
 		  , "stats-api" : ">=1.1.0" }
 , "devDependencies": { "buffer-equal" : "*"
 		     , "mocha" : "*"
-		     , "chai"  : "*"
-		     , "printf" : "*" }
+		     , "chai"  : "*" }
 , "engines"     : { "node" : ">=0.4.0" }
 }

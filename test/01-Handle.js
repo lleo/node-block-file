@@ -3,8 +3,6 @@
 var Handle = require('../lib/handle')
   , expect = require('chai').expect
   , assert = require('assert')
-  , sprintf = require('printf')
-  , fprintf = sprintf
   , props = require('../lib/props').defaultProps
 
 describe("Handle", function(){

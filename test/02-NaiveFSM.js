@@ -8,7 +8,6 @@ var props = require('../lib/props').defaultProps
   , assert = require('chai').assert
   , expect = require('chai').expect
   , log = console.log
-//  , sprintf = require('printf')
 
 describe("NaiveFSM", function(){
   var fsm, span, ofsm

@@ -11,9 +11,6 @@ var Handle = require('../lib/handle')
   , expect = require('chai').expect
   , log = console.log
   , format = require('util').format
-  , sprintf = require('printf')
-  , printf = require('../lib/utils').printf
-  , eprintf = require('../lib/utils').eprintf
   , props = require('../lib/props').defaultProps
 
 describe("Segment", function(){
