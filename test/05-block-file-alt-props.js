@@ -297,6 +297,70 @@ var metaProps = { numHandleBits: 64
 
   })
 
+  var appData = { msg: "This is my AppData" }
+    , appDataBuf = new Buffer( JSON.stringify(appData), 'utf8')
+
+  describe("Write App Data", function(){
+    var bf
+
+    it("should open "+filename, function(done){
+      BlockFile.open(filename, function(err, bf_){
+        bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        done()
+      })
+    })
+
+
+    it("should call bf.setAppData()", function(done){
+      try {
+        bf.setAppData(appDataBuf)
+      } catch (x) {
+        done(x)
+        return
+      }
+      done()
+    })
+
+    it("bf.close()", function(done){
+      bf.close(done)
+    })
+  })
+
+  describe("Read App Data", function(){
+    var bf
+
+    it("should open "+filename, function(done){
+      BlockFile.open(filename, function(err, bf_){
+        bf = bf_
+        if (err) {
+          done(err)
+          return
+        }
+        expect(bf).to.be.an.instanceof(BlockFile)
+        done()
+      })
+    })
+
+
+    it("should call bf.getAppData()", function(){
+      var buf = bf.getAppData()
+        , dataStr = buf.toString('utf8')
+
+      var data = JSON.parse( dataStr )
+
+      assert.ok( data.msg === appData.msg )
+    })
+
+    it("bf.close()", function(done){
+      bf.close(done)
+    })
+  })
+
   describe("Write the stats out to "+outputFN, function(){
     it("should dump BlockFile.STATS", function(done){
       fs.writeFile(outputFN, BlockFile.STATS.toString({values:"both"})+"\n"
