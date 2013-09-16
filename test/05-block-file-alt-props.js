@@ -234,13 +234,14 @@ var metaProps = { numHandleBits: 64
       })
     })
 
+    it("should now have three segemnts", function(){
+      expect(bf.segments.length).to.equal(3)
+    })
+
     it("bf.close()", function(done){
       bf.close(done)
     })
 
-    it("should now have three segemnts", function(){
-      expect(bf.segments.length).to.equal(3)
-    })
   })
 
   describe("Read all entries & compare to in memory list", function(){
