@@ -12,8 +12,20 @@
                   , "email": "lleoem@gmail.com"
                   , "url": "http://lleo-blog.blogspot.com/" }
 , "main"        : "lib/block_file.js"
+, "license"     : "MIT"
+, "scripts"     : { "test" : "mocha -R spec -s 1 test/??-*.js" }
+, "dependencies": { "crc"        : ">=0.2.0"
+		  , "async"      : ">=0.2.6"
+		  , "lodash"     : ">=1.0.1"
+		  , "msgpack-js" : ">=0.3.0"
+		  , "stats-api"  : ">=1.1.0" }
+, "devDependencies": { "buffer-equal" : ">=0.0.0"
+		     , "mocha" : ">=1.12.1"
+		     , "chai"  : ">=1.7.2" }
+, "engines"     : { "node" : ">=0.4.0" }
 , "files"       : [ "package.json"
                   , "README.md"
+		  , "CHANGELOG.md"
 		  , "lib/block_file.js"
 		  , "lib/fsm_naive.js"
                   , "lib/handle.js"
@@ -28,15 +40,4 @@
                   , "test/04-block-file.js"
                   , "test/05-block-file-alt-props.js"
                   ]
-, "license"     : "MIT"
-, "scripts"     : { "test" : "mocha -R spec -s 1 test/??-*.js" }
-, "dependencies": { "crc"        : ">=0.2.0"
-		  , "async"      : ">=0.2.6"
-		  , "lodash"     : ">=1.0.1"
-		  , "msgpack-js" : ">=0.3.0"
-		  , "stats-api"  : ">=1.1.0" }
-, "devDependencies": { "buffer-equal" : ">=0.0.0"
-		     , "mocha" : ">=1.12.1"
-		     , "chai"  : ">=1.7.2" }
-, "engines"     : { "node" : ">=0.4.0" }
 }
