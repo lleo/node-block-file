@@ -69,6 +69,12 @@ BlockFile.open(filename, function(err, bf){
 })
 ```
 
+### `bf.flush(cb)`
+
+Where `cb` has the signature `cb(err)`.
+
+This writes out the file header and each dirty segment free space map.
+
 ### `bf.store(buffer, [handle], cb)`
 
 Where `cb` has the signature `cb(err, handle)`. If node `handle` is provided
@@ -90,14 +96,10 @@ bf.store(buffer, handle, function(err, handle){
 ### `bf.load(handle, cb)`
 
 ```javascript
-bf.load(handle, function(err, buffer, handle){
+bf.load(handle, function(err, buffer){
   ...
 })
 ```
-
-### `handle = bf.reserve(numBlocks, cb)`
-
-Where `cb` has the signature `cb(err)`.
 
 ### `boolean = bf.release(handle, cb)`
 
@@ -105,6 +107,15 @@ Where `cb` has the signature `cb(err)`.
 
 `boolean` reflects whether the handle was reserved already or not.
 
+### `bf.setAppData(buffer)`
+
+Possably throws Error objects if buffer is to big to fit in the remaining
+amount of metadata buffer. Lets say ~3.5KB .
+
+## `buffer = bf.getAppData()`
+
+That is about it. Could throw an Error if the metadata values of metaPropsLen
+or appDataLen are corrupted and to large. That would mean a big bug is found.
 
 ## Props
 
