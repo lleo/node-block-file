@@ -18,7 +18,7 @@
 		  , "async"      : ">=0.2.6"
 		  , "lodash"     : ">=1.0.1"
 		  , "msgpack-js" : ">=0.3.0"
-		  , "stats-api"  : ">=1.1.0" }
+		  , "stats-api"  : ">=1.2.0" }
 , "devDependencies": { "buffer-equal" : ">=0.0.0"
 		     , "mocha" : ">=1.12.1"
 		     , "chai"  : ">=1.7.2" }

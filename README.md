@@ -14,13 +14,20 @@ seconds with async). Additionally the async API can be easily converted to
 a promise API via `Y.promisify` aka `Y.nfbind` or `Y.denodify` (or simmilar
 functions in other promise libraries).
 
+## Apology for file format change
+
+This is getting stupid, apologizing and such, but in order to store a small
+amount of data in the metadata area, like an initial handle of some data
+structure layered over `block-file`, I had to modify the metadata structure.
+Also the API `bf.setAppData()` &  `bf.getAppData()` is a dumb name, but I
+can't thing of anything better.
+
+So version 1.2.0 file format is incompatable with version 1.1.1.
+
 ## Future?
 
 I have plans for a 2.0 version which will make this library more
-"transaction-capable". What that means I haven't quite figured out. But
-the idea is to write a log of changes to a BlockFile/Segments and only
-commit them when directed to. Any failed commit (via crash) can be re-tried
-to regain a vaild state.
+"transaction-capable". What that means I haven't quite figured out.
 
 # Purpose
 
