@@ -1,5 +1,7 @@
 /* global describe it */
 
+"use strict";
+
 var props = require('../lib/props').defaultProps
   , Handle = require('../lib/handle')
   , BlockFile = require('../lib/block_file')
